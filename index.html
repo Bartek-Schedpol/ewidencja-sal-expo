@@ -13585,14 +13585,14 @@ function refreshHome(){
   );
   const el=document.getElementById('home-alerts');
   if(!alerts.length){el.innerHTML='<div class="empty" style="padding:12px 16px;text-align:left"><i class="ti ti-circle-check" style="display:inline;font-size:14px;margin-right:6px;color:var(--green)"></i><span style="font-size:13px">Brak alertów — wszystko w porządku.</span></div>';return}
-  el.innerHTML=alerts.map(p=>'<div class="card" onclick="openDetail(''+p.id+'','s-home')"><div class="card-row"><span class="card-name">'+p.nazwa+'</span>'+badge(p.status)+'</div><div class="card-meta">'+( p.kod||'brak kodu')+(p.wymiary?' &bull; '+p.wymiary:'')+' &bull; '+p.sala+(p.zwrot?' &bull; zwrot: '+p.zwrot:'')+'</div></div>').join('');
+  el.innerHTML=alerts.map(p=>'<div class="card" onclick="openDetail(this.dataset.id,'s-home')" data-id="'+p.id+'"><div class="card-row"><span class="card-name">'+p.nazwa+'</span>'+badge(p.status)+'</div><div class="card-meta">'+( p.kod||'brak kodu')+(p.wymiary?' &bull; '+p.wymiary:'')+' &bull; '+p.sala+(p.zwrot?' &bull; zwrot: '+p.zwrot:'')+'</div></div>').join('');
 }
 
 function renderSales(){
   const arr=Object.values(products);
   document.getElementById('sales-list').innerHTML=SALE_NAMES.map(sala=>{
     const cnt=arr.filter(p=>p.sala===sala).length;
-    return '<div class="sala-card" onclick="openSalaDetail(''+sala+'')">'+
+    return '<div class="sala-card" onclick="openSalaDetail(this.dataset.sala)" data-sala="'+sala+'">'+
       '<div><div class="sc-name">'+sala+'</div><div class="sc-meta">kliknij aby zobaczyć produkty</div></div>'+
       '<div class="sc-count">'+cnt+'</div></div>';
   }).join('');
@@ -13603,7 +13603,7 @@ function openSalaDetail(sala){
   const arr=Object.values(products).filter(p=>p.sala===sala).sort((a,b)=>(a.nazwa||'').localeCompare(b.nazwa||''));
   const el=document.getElementById('sala-detail-list');
   if(!arr.length){el.innerHTML='<div class="empty"><i class="ti ti-package"></i>Brak produktów w tej sali</div>';go('s-sala-detail');return}
-  el.innerHTML=arr.map(p=>'<div class="card" onclick="openDetail(''+p.id+'','s-sala-detail')">'+
+  el.innerHTML=arr.map(p=>'<div class="card" onclick="openDetail(this.dataset.id,'s-sala-detail')" data-id="'+p.id+'">'+
     '<div class="card-row"><span class="card-name">'+(p.typ==='prototyp'?'<span class="dot-proto"></span>':'')+p.nazwa+'</span>'+badge(p.status)+'</div>'+
     '<div class="card-meta">'+(p.kod||'brak kodu')+(p.wymiary?' &bull; '+p.wymiary:'')+(p.marka?' &bull; '+p.marka:'')+(p.typ!=='standardowy'?' &bull; <span style="color:var(--amber-text)">'+p.typ+'</span>':'')+'</div></div>').join('');
   go('s-sala-detail');
@@ -13617,7 +13617,7 @@ function buildFilterPills(){
   const sales=['all','Sala A (100 m²)','Sala B (100 m²)','Sala C (50 m²)','Showroom'];
   const labels={'all':'Wszystkie'};
   document.getElementById('filter-pills').innerHTML=sales.map(s=>
-    '<div class="pill'+(activeFilter===s?' active':'')+'" onclick="activeFilter=''+s+'';buildFilterPills();renderProducts()">'+(labels[s]||s.split(' ')[0]+' '+s.split(' ')[1])+'</div>'
+    '<div class="pill'+(activeFilter===s?' active':'')+'" onclick="activeFilter=this.dataset.s;buildFilterPills();renderProducts()" data-s="'+s+'">'+(labels[s]||s.split(' ')[0]+' '+s.split(' ')[1])+'</div>'
   ).join('');
 }
 
@@ -13632,7 +13632,7 @@ function renderProducts(){
   arr.sort((a,b)=>(a.nazwa||'').localeCompare(b.nazwa||''));
   const el=document.getElementById('product-list');
   if(!arr.length){el.innerHTML='<div class="empty"><i class="ti ti-package"></i>Brak produktów</div>';return}
-  el.innerHTML=arr.map(p=>'<div class="card" onclick="openDetail(''+p.id+'','s-products')">'+
+  el.innerHTML=arr.map(p=>'<div class="card" onclick="openDetail(this.dataset.id,'s-products')" data-id="'+p.id+'">'+
     '<div class="card-row"><span class="card-name">'+(p.typ==='prototyp'?'<span class="dot-proto"></span>':'')+p.nazwa+'</span>'+badge(p.status)+'</div>'+
     '<div class="card-meta"><span>'+p.sala+'</span>'+(p.wymiary?'<span>&bull; '+p.wymiary+'</span>':'')+(p.marka?'<span>&bull; '+p.marka+'</span>':'')+(p.kod?'<span>&bull; '+p.kod+'</span>':'')+(p.typ!=='standardowy'?'<span style="color:var(--amber-text)">&bull; '+p.typ+'</span>':'')+'</div></div>').join('');
 }
