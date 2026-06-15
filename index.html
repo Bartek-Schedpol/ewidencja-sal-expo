@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Ewidencja Sal">
+<meta name="theme-color" content="#185FA5">
+<title>Ewidencja Sal — Schedpol</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, set, get, update, remove, onValue, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    databaseURL: "https://ewidencja-sal-eksp-2026-default-rtdb.europe-west1.firebasedatabase.app/"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  window._fb = { db, ref, set, get, update, remove, onValue, push };
+  window.dispatchEvent(new Event('firebase-ready'));
+</script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff; --bg2: #f5f5f5; --bg3: #ebebeb;
+    --text: #1a1a1a; --text2: #666; --text3: #999;
+    --border: rgba(0,0,0,0.12); --border2: rgba(0,0,0,0.22);
+    --blue: #185FA5; --blue-bg: #E6F1FB; --blue-text: #0C447C;
+    --green: #1D9E75; --green-bg: #EAF3DE; --green-text: #27500A;
+    --red: #E24B4A; --red-bg: #FCEBEB; --red-text: #791F1F;
+    --amber-bg: #FAEEDA; --amber-text: #633806;
+    --purple-bg: #EEEDFE; --purple-text: #3C3489;
+    --gray-bg: #F1EFE8; --gray-text: #444441;
+    --radius: 8px; --radius-lg: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a1a; --bg2: #242424; --bg3: #2e2e2e;
+      --text: #f0f0f0; --text2: #aaa; --text3: #666;
+      --border: rgba(255,255,255,0.1); --border2: rgba(255,255,255,0.2);
+      --blue-bg: #0C447C; --blue-text: #B5D4F4;
+      --green-bg: #085041; --green-text: #9FE1CB;
+      --red-bg: #501313; --red-text: #F7C1C1;
+      --amber-bg: #412402; --amber-text: #FAC775;
+      --purple-bg: #26215C; --purple-text: #CECBF6;
+      --gray-bg: #2C2C2A; --gray-text: #D3D1C7;
+    }
+  }
+  html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); font-size: 16px; }
+  .app { max-width: 480px; margin: 0 auto; min-height: 100vh; background: var(--bg); }
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: block; }
+
+  /* TOPBAR */
+  .topbar { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 0.5px solid var(--border); background: var(--bg); position: sticky; top: 0; z-index: 10; }
+  .topbar h1 { font-size: 17px; font-weight: 600; flex: 1; }
+  .topbar i { font-size: 22px; cursor: pointer; color: var(--text2); }
+  .topbar i:hover { color: var(--text); }
+
+  /* CARDS */
+  .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); margin: 0 12px 10px; padding: 14px 16px; cursor: pointer; transition: background .12s; }
+  .card:hover, .card:active { background: var(--bg2); }
+  .card-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .card-name { font-size: 14px; font-weight: 600; color: var(--text); }
+  .card-meta { font-size: 12px; color: var(--text2); margin-top: 4px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+
+  /* BADGES */
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+  .s-expo { background: var(--green-bg); color: var(--green-text); }
+  .s-wyp-k { background: var(--blue-bg); color: var(--blue-text); }
+  .s-wyp-h { background: var(--purple-bg); color: var(--purple-text); }
+  .s-test { background: var(--amber-bg); color: var(--amber-text); }
+  .s-serw { background: var(--gray-bg); color: var(--gray-text); }
+  .s-dem { background: var(--gray-bg); color: var(--gray-text); }
+  .s-brak { background: var(--red-bg); color: var(--red-text); }
+  .s-likw { background: var(--gray-bg); color: var(--gray-text); }
+
+  /* STATS */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; }
+  .stat { background: var(--bg2); border-radius: var(--radius); padding: 12px 14px; }
+  .stat .val { font-size: 26px; font-weight: 700; line-height: 1; }
+  .stat .lbl { font-size: 11px; color: var(--text2); margin-top: 4px; }
+
+  /* NAV GRID */
+  .nav-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 4px 12px 12px; }
+  .nav-btn { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 18px 14px; cursor: pointer; text-align: center; transition: background .12s; }
+  .nav-btn:hover, .nav-btn:active { background: var(--bg2); }
+  .nav-btn i { font-size: 28px; color: var(--text2); display: block; margin-bottom: 8px; }
+  .nav-btn .nb-title { font-size: 14px; font-weight: 600; }
+  .nav-btn .nb-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+  /* FORMS */
+  .form-section { padding: 12px 16px 0; }
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 5px; font-weight: 500; }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%; padding: 11px 12px; font-size: 14px; border: 0.5px solid var(--border2);
+    border-radius: var(--radius); background: var(--bg); color: var(--text);
+    outline: none; font-family: inherit; transition: border-color .15s;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--blue); }
+  .form-group textarea { min-height: 72px; resize: vertical; }
+  .req { color: var(--red); }
+
+  /* BUTTONS */
+  .btn-primary { display: block; width: calc(100% - 24px); margin: 8px 12px; padding: 14px; font-size: 15px; font-weight: 600; background: var(--blue); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; font-family: inherit; transition: background .15s; }
+  .btn-primary:hover { background: var(--blue-text); }
+  .btn-secondary { display: block; width: calc(100% - 24px); margin: 6px 12px; padding: 12px; font-size: 14px; font-weight: 500; background: transparent; color: var(--text); border: 0.5px solid var(--border2); border-radius: var(--radius); cursor: pointer; font-family: inherit; transition: background .15s; }
+  .btn-secondary:hover { background: var(--bg2); }
+  .btn-danger { display: block; width: calc(100% - 24px); margin: 6px 12px; padding: 12px; font-size: 14px; background: transparent; color: var(--red); border: 0.5px solid var(--red); border-radius: var(--radius); cursor: pointer; font-family: inherit; }
+
+  /* DETAIL ROWS */
+  .detail-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 11px 16px; border-bottom: 0.5px solid var(--border); gap: 12px; }
+  .detail-row .dk { font-size: 13px; color: var(--text2); flex-shrink: 0; }
+  .detail-row .dv { font-size: 13px; font-weight: 500; text-align: right; max-width: 65%; word-break: break-word; }
+
+  /* QR */
+  .qr-box { text-align: center; padding: 24px 16px 16px; }
+  .qr-box canvas { border-radius: var(--radius); border: 0.5px solid var(--border); display: inline-block; }
+  .qr-label { font-size: 11px; color: var(--text3); margin-top: 8px; font-family: monospace; }
+  .qr-hint { font-size: 12px; color: var(--text2); margin-bottom: 14px; }
+
+  /* SCAN */
+  .scan-wrapper { padding: 12px 16px; }
+  .scan-area { position: relative; width: 100%; border-radius: var(--radius-lg); overflow: hidden; background: #000; }
+  .scan-area video { width: 100%; display: block; max-height: 320px; object-fit: cover; }
+  .scan-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+  .scan-frame { width: 200px; height: 200px; border: 2.5px solid var(--blue); border-radius: 12px; }
+  .scan-hint { text-align: center; font-size: 13px; color: var(--text2); padding: 10px 0; min-height: 40px; }
+
+  /* INVENTORY */
+  .inv-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 0.5px solid var(--border); }
+  .inv-check { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+  .inv-check.ok { background: var(--green); color: #fff; }
+  .inv-check.miss { background: var(--red); color: #fff; }
+  .inv-item .iname { flex: 1; }
+  .iname .in { font-size: 13px; font-weight: 600; }
+  .iname .im { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+  /* LOG */
+  .log-item { padding: 11px 16px; border-bottom: 0.5px solid var(--border); }
+  .log-item .lt { font-size: 13px; font-weight: 600; }
+  .log-item .lm { font-size: 12px; color: var(--text2); margin-top: 3px; }
+  .log-item .ld { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  /* PIN */
+  .pin-wrap { padding: 36px 16px 20px; text-align: center; }
+  .pin-logo { font-size: 44px; color: var(--blue); }
+  .pin-title { font-size: 22px; font-weight: 700; margin-top: 10px; }
+  .pin-sub { font-size: 13px; color: var(--text2); margin-top: 4px; }
+  .pin-dots { display: flex; justify-content: center; gap: 14px; margin: 28px 0 8px; }
+  .pin-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--bg3); border: 1.5px solid var(--border2); transition: background .15s; }
+  .pin-dot.filled { background: var(--blue); border-color: var(--blue); }
+  .pin-err { font-size: 12px; color: var(--red); min-height: 20px; margin-bottom: 10px; }
+  .pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 300px; margin: 0 auto; }
+  .pin-btn { padding: 20px; font-size: 24px; font-weight: 400; background: var(--bg2); border: none; border-radius: var(--radius); cursor: pointer; color: var(--text); font-family: inherit; transition: background .12s; }
+  .pin-btn:active { background: var(--bg3); transform: scale(0.96); }
+  .pin-btn.small { font-size: 13px; color: var(--text2); }
+  .pin-note { font-size: 11px; color: var(--text3); margin-top: 16px; }
+
+  /* SEARCH */
+  .search-wrap { padding: 10px 12px 6px; position: relative; }
+  .search-wrap i { position: absolute; left: 24px; top: 50%; transform: translateY(-50%); color: var(--text2); font-size: 16px; pointer-events: none; }
+  .search-wrap input { padding-left: 36px; }
+
+  /* SECTION TITLE */
+  .sec-title { font-size: 11px; font-weight: 600; color: var(--text2); padding: 10px 16px 6px; text-transform: uppercase; letter-spacing: .5px; }
+
+  /* EMPTY */
+  .empty { text-align: center; padding: 48px 16px; color: var(--text2); font-size: 14px; }
+  .empty i { font-size: 40px; display: block; margin-bottom: 12px; color: var(--text3); }
+
+  /* TOAST */
+  #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a1a; color: #fff; padding: 10px 22px; border-radius: 24px; font-size: 13px; font-weight: 500; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity .25s; white-space: nowrap; }
+  #toast.show { opacity: 1; }
+
+  /* LOADING */
+  #loading { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9998; gap: 16px; }
+  #loading i { font-size: 48px; color: var(--blue); }
+  #loading p { font-size: 14px; color: var(--text2); }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--bg3); border-top-color: var(--blue); border-radius: 50%; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* PRINT QR */
+  @media print {
+    .no-print { display: none !important; }
+    .print-qr { display: block !important; }
+    body { background: white; }
+  }
+
+  /* FILTER PILLS */
+  .filter-pills { display: flex; gap: 6px; padding: 0 12px 8px; flex-wrap: wrap; }
+  .pill { font-size: 11px; padding: 4px 10px; border-radius: 20px; border: 0.5px solid var(--border2); cursor: pointer; background: var(--bg); color: var(--text2); font-weight: 500; }
+  .pill.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+  .dot-proto { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--amber-text); margin-right: 3px; }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <i class="ti ti-building-store"></i>
+  <div class="spinner"></div>
+  <p>Łączenie z bazą danych...</p>
+</div>
+
+<div class="app" id="app">
+
+<!-- PIN -->
+<div id="s-pin" class="screen active">
+  <div class="pin-wrap">
+    <div class="pin-logo"><i class="ti ti-building-store"></i></div>
+    <div class="pin-title">Ewidencja sal</div>
+    <div class="pin-sub">Schedpol — Trade Marketing</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-err" id="pin-err"></div>
+    <div class="pin-pad">
+      <button class="pin-btn" onclick="pp('1')">1</button>
+      <button class="pin-btn" onclick="pp('2')">2</button>
+      <button class="pin-btn" onclick="pp('3')">3</button>
+      <button class="pin-btn" onclick="pp('4')">4</button>
+      <button class="pin-btn" onclick="pp('5')">5</button>
+      <button class="pin-btn" onclick="pp('6')">6</button>
+      <button class="pin-btn" onclick="pp('7')">7</button>
+      <button class="pin-btn" onclick="pp('8')">8</button>
+      <button class="pin-btn" onclick="pp('9')">9</button>
+      <button class="pin-btn small" onclick="pp('X')">Zarząd</button>
+      <button class="pin-btn" onclick="pp('0')">0</button>
+      <button class="pin-btn small" onclick="pinBack()"><i class="ti ti-backspace"></i></button>
+    </div>
+    <div class="pin-note">PIN Lider TM: 1234 &nbsp;|&nbsp; Zarząd (podgląd): 0000</div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="s-home" class="screen">
+  <div class="topbar">
+    <i class="ti ti-building-store" style="color:var(--blue);cursor:default"></i>
+    <h1>Sale pokazowe</h1>
+    <i class="ti ti-refresh" onclick="loadProducts(true)" title="Odśwież"></i>
+    <i class="ti ti-logout" onclick="logout()" title="Wyloguj"></i>
+  </div>
+  <div class="stats-grid" id="home-stats"></div>
+  <div class="nav-grid">
+    <div class="nav-btn" onclick="go('s-products')">
+      <i class="ti ti-package"></i>
+      <div class="nb-title">Produkty</div>
+      <div class="nb-sub">lista &amp; edycja</div>
+    </div>
+    <div class="nav-btn" id="btn-add" onclick="go('s-add')">
+      <i class="ti ti-plus"></i>
+      <div class="nb-title">Dodaj produkt</div>
+      <div class="nb-sub">nowy wpis</div>
+    </div>
+    <div class="nav-btn" onclick="startInventory()">
+      <i class="ti ti-clipboard-check"></i>
+      <div class="nb-title">Inwentura</div>
+      <div class="nb-sub">skanuj QR</div>
+    </div>
+    <div class="nav-btn" onclick="go('s-log')">
+      <i class="ti ti-history"></i>
+      <div class="nb-title">Historia</div>
+      <div class="nb-sub">zmiany statusów</div>
+    </div>
+  </div>
+  <div class="sec-title">Wymagające uwagi</div>
+  <div id="home-alerts"></div>
+</div>
+
+<!-- PRODUCTS -->
+<div id="s-products" class="screen">
+  <div class="topbar">
+    <i class="ti ti-arrow-left" onclick="go('s-home')"></i>
+    <h1>Produkty</h1>
+    <i class="ti ti-qrcode" onclick="go('s-scan-find')" title="Skanuj QR"></i>
+  </div>
+  <div class="search-wrap">
+    <i class="ti ti-search"></i>
+    <input type="text" placeholder="Szukaj po nazwie, kodzie, marce..." id="search-in" oninput="renderProducts()">
+  </div>
+  <div class="filter-pills" id="filter-pills"></div>
+  <div id="product-list"></div>
+</div>
+
+<!-- ADD -->
+<div id="s-add" class="screen">
+  <div class="topbar">
+    <i class="ti ti-arrow-left" onclick="go('s-home')"></i>
+    <h1>Nowy produkt</h1>
+  </div>
+  <div class="form-section">
+    <div class="form-group">
+      <label>Kod handlowy</label>
+      <input type="text" id="f-kod" placeholder="np. BRO-120-80-01">
+    </div>
+    <div class="form-group">
+      <label>Nazwa produktu <span class="req">*</span></label>
+      <input type="text" id="f-nazwa" placeholder="np. Brodzik akrylowy 120×80">
+    </div>
+    <div class="form-group">
+      <label>Marka</label>
+      <input type="text" id="f-marka" placeholder="np. Schedline">
+    </div>
+    <div class="form-group">
+      <label>Lokalizacja <span class="req">*</span></label>
+      <select id="f-sala">
+        <option value="">— wybierz salę —</option>
+        <option>Sala A (100 m²)</option>
+        <option>Sala B (100 m²)</option>
+        <option>Sala C (50 m²)</option>
+        <option>Showroom</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select id="f-status">
+        <option>Na ekspozycji</option>
+        <option>Wypożyczony – dla klienta</option>
+        <option>Wypożyczony – handlowiec</option>
+        <option>Na testach / prezentacji</option>
+        <option>W serwisie</option>
+        <option>Zdemontowany / zdjęty z ekspozycji</option>
+        <option>Zlikwidowany</option>
+        <option>Brak – do wyjaśnienia</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Typ produktu</label>
+      <select id="f-typ">
+        <option value="standardowy">Standardowy</option>
+        <option value="prototyp">Prototyp</option>
+        <option value="próbka">Próbka</option>
+        <option value="element ekspozycyjny">Element ekspozycyjny</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Uwagi</label>
+      <textarea id="f-uwagi" placeholder="Opcjonalne uwagi..."></textarea>
+    </div>
+  </div>
+  <button class="btn-primary" onclick="saveProduct()">Zapisz produkt</button>
+</div>
+
+<!-- DETAIL -->
+<div id="s-detail" class="screen">
+  <div class="topbar">
+    <i class="ti ti-arrow-left" id="detail-back" onclick="go('s-products')"></i>
+    <h1 id="detail-title">Produkt</h1>
+    <i class="ti ti-edit" id="btn-edit" onclick="openEdit()"></i>
+  </div>
+  <div id="detail-body"></div>
+  <div class="qr-box">
+    <div class="qr-hint">Kod QR do wydruku i naklejenia na produkt</div>
+    <canvas id="qr-canvas" width="180" height="180"></canvas>
+    <div class="qr-label" id="qr-id-label"></div>
+    <button class="btn-secondary no-print" style="margin-top:14px" onclick="window.print()">
+      <i class="ti ti-printer" style="margin-right:6px"></i>Drukuj kod QR
+    </button>
+  </div>
+</div>
+
+<!-- EDIT -->
+<div id="s-edit" class="screen">
+  <div class="topbar">
+    <i class="ti ti-arrow-left" onclick="go('s-detail')"></i>
+    <h1>Edytuj produkt</h1>
+  </div>
+  <div class="form-section">
+    <div class="form-group">
+      <label>Zmień status</label>
+      <select id="e-status">
+        <option>Na ekspozycji</option>
+        <option>Wypożyczony – dla klienta</option>
+        <option>Wypożyczony – handlowiec</option>
+        <option>Na testach / prezentacji</option>
+        <option>W serwisie</option>
+        <option>Zdemontowany / zdjęty z ekspozycji</option>
+        <option>Zlikwidowany</option>
+        <option>Brak – do wyjaśnienia</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Lokalizacja</label>
+      <select id="e-sala">
+        <option>Sala A (100 m²)</option>
+        <option>Sala B (100 m²)</option>
+        <option>Sala C (50 m²)</option>
+        <option>Showroom</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Osoba / dział pobierający</label>
+      <input type="text" id="e-osoba" placeholder="np. Jan Kowalski / Dział Handlowy">
+    </div>
+    <div class="form-group">
+      <label>Planowany zwrot</label>
+      <input type="date" id="e-zwrot">
+    </div>
+    <div class="form-group">
+      <label>Marka</label>
+      <input type="text" id="e-marka">
+    </div>
+    <div class="form-group">
+      <label>Uwagi</label>
+      <textarea id="e-uwagi"></textarea>
+    </div>
+  </div>
+  <button class="btn-primary" onclick="updateProduct()">Zapisz zmiany</button>
+  <button class="btn-danger" id="btn-delete" onclick="deleteProduct()">Usuń produkt z ewidencji</button>
+</div>
+
+<!-- INVENTORY -->
+<div id="s-inventory" class="screen">
+  <div class="topbar">
+    <i class="ti ti-arrow-left" onclick="stopScan();go('s-home')"></i>
+    <h1>Inwentura</h1>
+    <span id="inv-counter" style="font-size:13px;color:var(--text2)"></span>
+  </div>
+  <div class="scan-wrapper">
+    <div style="font-size:13px;color:var(--text2);margin-bottom:12px">Skanuj kody QR przyklejone do produktów. Zeskanowane zostaną oznaczone jako <strong>obecne</strong>.</div>
+    <div class="scan-area" id="inv-scan-area">
+      <video id="inv-video" autoplay playsinline muted></video>
+      <div class="scan-overlay"><div class="scan-frame"></div></div>
+    </div>
+    <div class="scan-hint" id="inv-last">Skieruj kamerę na kod QR...</div>
+  </div>
+  <button class="btn-secondary" onclick="stopScan();go('s-inv-list')">
+    <i class="ti ti-list" style="margin-right:6px"></i>Pokaż wyniki inwentury
+  </button>
+</div>
+
+<!-- INVENTORY LIST -->
+<div id="s-inv-list" class="screen">
+  <div class="topbar">
+    <i class="ti ti-arrow-left" onclick="go('s-inventory')"></i>
+    <h1>Wyniki inwentury</h1>
+  </div>
+  <div class="stats-grid">
+    <div class="stat"><div class="val" style="color:var(--green)" id="inv-ok-n">0</div><div class="lbl">Zeskanowane</div></div>
+    <div class="stat"><div class="val" style="color:var(--red)" id="inv-miss-n">0</div><div class="lbl">Nieznalezione</div></div>
+  </div>
+  <div id="inv-list"></div>
+  <button class="btn-primary" onclick="finishInventory()">Zakończ i zapisz inwenturę</button>
+  <button class="btn-secondary" onclick="go('s-inventory')">Wróć do skanowania</button>
+</div>
+
+<!-- SCAN FIND -->
+<div id="s-scan-find" class="screen">
+  <div class="topbar">
+    <i class="ti ti-arrow-left" onclick="stopScan();go('s-products')"></i>
+    <h1>Skanuj kod QR</h1>
+  </div>
+  <div class="scan-wrapper">
+    <div style="font-size:13px;color:var(--text2);margin-bottom:12px">Skieruj kamerę na kod QR naklejony na produkcie.</div>
+    <div class="scan-area">
+      <video id="find-video" autoplay playsinline muted></video>
+      <div class="scan-overlay"><div class="scan-frame"></div></div>
+    </div>
+    <div class="scan-hint" id="find-hint">Oczekiwanie na skan...</div>
+  </div>
+</div>
+
+<!-- LOG -->
+<div id="s-log" class="screen">
+  <div class="topbar">
+    <i class="ti ti-arrow-left" onclick="go('s-home')"></i>
+    <h1>Historia zmian</h1>
+  </div>
+  <div id="log-list"></div>
+</div>
+
+</div><!-- /app -->
+
+<div id="toast"></div>
+
+<script>
+const PINS = { '1234': 'lider', '0000': 'viewer' };
+const STATUS_CLASS = {
+  'Na ekspozycji':'s-expo','Wypożyczony – dla klienta':'s-wyp-k',
+  'Wypożyczony – handlowiec':'s-wyp-h','Na testach / prezentacji':'s-test',
+  'W serwisie':'s-serw','Zdemontowany / zdjęty z ekspozycji':'s-dem',
+  'Zlikwidowany':'s-likw','Brak – do wyjaśnienia':'s-brak'
+};
+
+let fbDB, fbRef, fbSet, fbGet, fbUpdate, fbRemove, fbOnValue, fbPush;
+let products = {};
+let logs = [];
+let currentId = null;
+let invSession = {};
+let scanStream = null;
+let scanInterval = null;
+let userRole = null;
+let activeFilter = 'all';
+
+window.addEventListener('firebase-ready', () => {
+  const f = window._fb;
+  fbDB = f.db; fbRef = f.ref; fbSet = f.set; fbGet = f.get;
+  fbUpdate = f.update; fbRemove = f.remove; fbOnValue = f.onValue; fbPush = f.push;
+  document.getElementById('loading').style.display = 'none';
+  fbOnValue(fbRef(fbDB, 'products'), snap => {
+    products = snap.val() || {};
+    if (document.getElementById('s-products').classList.contains('active')) renderProducts();
+    if (document.getElementById('s-home').classList.contains('active')) refreshHome();
+  });
+  fbOnValue(fbRef(fbDB, 'log'), snap => {
+    const raw = snap.val() || {};
+    logs = Object.values(raw).sort((a,b) => b.ts - a.ts).slice(0,300);
+    if (document.getElementById('s-log').classList.contains('active')) renderLog();
+  });
+});
+
+function uid() { return 'P' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2,5).toUpperCase(); }
+function tsNow() { return new Date().toLocaleString('pl-PL',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
+function tsMs() { return Date.now(); }
+
+function toast(msg, dur=2400) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+let pinBuf = '';
+function pp(d) {
+  if (d === 'X') { pinBuf = ''; updateDots(); return; }
+  pinBuf += d; updateDots();
+  if (pinBuf.length === 4) {
+    const role = PINS[pinBuf];
+    if (role) { userRole = role; pinBuf = ''; updateDots(); onLogin(); }
+    else { document.getElementById('pin-err').textContent = 'Nieprawidłowy PIN'; pinBuf = ''; updateDots(); }
+  }
+}
+function pinBack() { pinBuf = pinBuf.slice(0,-1); updateDots(); document.getElementById('pin-err').textContent=''; }
+function updateDots() { for(let i=0;i<4;i++) document.getElementById('pd'+i).classList.toggle('filled', i<pinBuf.length); }
+
+function onLogin() {
+  document.getElementById('pin-err').textContent = '';
+  const isViewer = userRole === 'viewer';
+  document.getElementById('btn-add').style.opacity = isViewer ? '.4' : '1';
+  document.getElementById('btn-add').style.pointerEvents = isViewer ? 'none' : '';
+  refreshHome(); go('s-home');
+}
+function logout() { userRole = null; stopScan(); go('s-pin'); }
+
+function go(sid) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(sid).classList.add('active');
+  if (sid === 's-products') renderProducts();
+  if (sid === 's-log') renderLog();
+  if (sid === 's-inv-list') renderInvList();
+  if (sid === 's-scan-find') startScanFind();
+  window.scrollTo(0,0);
+}
+
+function badge(s) { return `<span class="badge ${STATUS_CLASS[s]||'s-dem'}">${s}</span>`; }
+
+function refreshHome() {
+  const arr = Object.values(products);
+  const stats = { total: arr.length, expo: 0, wyp: 0, brak: 0 };
+  arr.forEach(p => {
+    if (p.status === 'Na ekspozycji') stats.expo++;
+    if (p.status && p.status.startsWith('Wypożyczony')) stats.wyp++;
+    if (p.status === 'Brak – do wyjaśnienia') stats.brak++;
+  });
+  document.getElementById('home-stats').innerHTML = `
+    <div class="stat"><div class="val">${stats.total}</div><div class="lbl">Produktów łącznie</div></div>
+    <div class="stat"><div class="val" style="color:var(--green)">${stats.expo}</div><div class="lbl">Na ekspozycji</div></div>
+    <div class="stat"><div class="val" style="color:var(--blue)">${stats.wyp}</div><div class="lbl">Wypożyczone</div></div>
+    <div class="stat"><div class="val" style="color:var(--red)">${stats.brak}</div><div class="lbl">Brak/wyjaśnienie</div></div>
+  `;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const alerts = arr.filter(p =>
+    p.status === 'Brak – do wyjaśnienia' ||
+    (p.zwrot && new Date(p.zwrot) < today && p.status && p.status.startsWith('Wypożyczony'))
+  );
+  const el = document.getElementById('home-alerts');
+  if (!alerts.length) {
+    el.innerHTML = '<div class="empty" style="padding:14px 16px;text-align:left"><i class="ti ti-circle-check" style="display:inline;font-size:14px;margin-right:6px;color:var(--green)"></i><span style="font-size:13px">Brak alertów — wszystko w porządku.</span></div>';
+    return;
+  }
+  el.innerHTML = alerts.map(p => `
+    <div class="card" onclick="openDetail('${p.id}')">
+      <div class="card-row"><span class="card-name">${p.nazwa}</span>${badge(p.status)}</div>
+      <div class="card-meta">${p.kod||'brak kodu'} &bull; ${p.sala}${p.zwrot?` &bull; zwrot: ${p.zwrot}`:''}</div>
+    </div>`).join('');
+}
+
+function buildFilterPills() {
+  const sales = ['all','Sala A (100 m²)','Sala B (100 m²)','Sala C (50 m²)','Showroom'];
+  const labels = {'all':'Wszystkie'};
+  document.getElementById('filter-pills').innerHTML = sales.map(s =>
+    `<div class="pill${activeFilter===s?' active':''}" onclick="activeFilter='${s}';buildFilterPills();renderProducts()">${labels[s]||s.split(' ')[0]+' '+s.split(' ')[1]}</div>`
+  ).join('');
+}
+
+async function loadProducts(showToast=false) {
+  if (showToast) toast('Odświeżanie...');
+}
+
+function renderProducts() {
+  buildFilterPills();
+  const q = (document.getElementById('search-in').value||'').toLowerCase().trim();
+  let arr = Object.values(products);
+  if (activeFilter !== 'all') arr = arr.filter(p => p.sala === activeFilter);
+  if (q) arr = arr.filter(p =>
+    (p.nazwa||'').toLowerCase().includes(q) ||
+    (p.kod||'').toLowerCase().includes(q) ||
+    (p.marka||'').toLowerCase().includes(q)
+  );
+  arr.sort((a,b) => (a.nazwa||'').localeCompare(b.nazwa||''));
+  const el = document.getElementById('product-list');
+  if (!arr.length) { el.innerHTML = '<div class="empty"><i class="ti ti-package"></i>Brak produktów</div>'; return; }
+  el.innerHTML = arr.map(p => `
+    <div class="card" onclick="openDetail('${p.id}')">
+      <div class="card-row">
+        <span class="card-name">${p.typ==='prototyp'?'<span class="dot-proto"></span>':''}${p.nazwa}</span>
+        ${badge(p.status)}
+      </div>
+      <div class="card-meta">
+        <span>${p.sala}</span>
+        ${p.marka?`<span>&bull; ${p.marka}</span>`:''}
+        ${p.kod?`<span>&bull; ${p.kod}</span>`:''}
+        ${p.typ!=='standardowy'?`<span style="color:var(--amber-text)">&bull; ${p.typ}</span>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function openDetail(id, backScreen) {
+  currentId = id;
+  const p = products[id];
+  if (!p) { toast('Produkt nie istnieje'); return; }
+  document.getElementById('detail-title').textContent = p.nazwa;
+  if (backScreen) document.getElementById('detail-back').setAttribute('onclick', `go('${backScreen}')`);
+  const isViewer = userRole === 'viewer';
+  document.getElementById('btn-edit').style.display = isViewer ? 'none' : '';
+  document.getElementById('detail-body').innerHTML = `
+    <div class="detail-row"><span class="dk">Status</span><span class="dv">${badge(p.status)}</span></div>
+    ${p.kod?`<div class="detail-row"><span class="dk">Kod handlowy</span><span class="dv">${p.kod}</span></div>`:''}
+    <div class="detail-row"><span class="dk">Marka</span><span class="dv">${p.marka||'—'}</span></div>
+    <div class="detail-row"><span class="dk">Sala / lokalizacja</span><span class="dv">${p.sala}</span></div>
+    <div class="detail-row"><span class="dk">Typ</span><span class="dv">${p.typ}</span></div>
+    ${p.osoba?`<div class="detail-row"><span class="dk">Pobierający</span><span class="dv">${p.osoba}</span></div>`:''}
+    ${p.zwrot?`<div class="detail-row"><span class="dk">Planowany zwrot</span><span class="dv">${p.zwrot}</span></div>`:''}
+    ${p.uwagi?`<div class="detail-row"><span class="dk">Uwagi</span><span class="dv">${p.uwagi}</span></div>`:''}
+    <div class="detail-row"><span class="dk">Dodano</span><span class="dv">${p.created||'—'}</span></div>
+    <div class="detail-row"><span class="dk">ID systemu</span><span class="dv" style="font-size:11px;font-family:monospace">${p.id}</span></div>
+  `;
+  try { QRCode.toCanvas(document.getElementById('qr-canvas'), p.id, { width:180, margin:2, color:{dark:'#000000',light:'#ffffff'} }); } catch(e){}
+  document.getElementById('qr-id-label').textContent = p.id;
+  go('s-detail');
+}
+
+function openEdit() {
+  const p = products[currentId];
+  document.getElementById('e-status').value = p.status;
+  document.getElementById('e-sala').value = p.sala;
+  document.getElementById('e-osoba').value = p.osoba||'';
+  document.getElementById('e-zwrot').value = p.zwrot||'';
+  document.getElementById('e-marka').value = p.marka||'';
+  document.getElementById('e-uwagi').value = p.uwagi||'';
+  go('s-edit');
+}
+
+async function saveProduct() {
+  const nazwa = document.getElementById('f-nazwa').value.trim();
+  const sala = document.getElementById('f-sala').value;
+  if (!nazwa) { toast('Podaj nazwę produktu'); return; }
+  if (!sala) { toast('Wybierz lokalizację'); return; }
+  const id = uid();
+  const p = {
+    id, nazwa, sala,
+    kod: document.getElementById('f-kod').value.trim(),
+    marka: document.getElementById('f-marka').value.trim(),
+    status: document.getElementById('f-status').value,
+    typ: document.getElementById('f-typ').value,
+    uwagi: document.getElementById('f-uwagi').value.trim(),
+    osoba:'', zwrot:'', created: tsNow()
+  };
+  await fbSet(fbRef(fbDB, `products/${id}`), p);
+  await addLog(p.nazwa, '—', p.status, 'nowy wpis');
+  ['f-kod','f-nazwa','f-marka','f-uwagi'].forEach(i => document.getElementById(i).value='');
+  document.getElementById('f-sala').value=''; document.getElementById('f-typ').value='standardowy';
+  toast('Produkt dodany!');
+  openDetail(id);
+}
+
+async function updateProduct() {
+  const p = products[currentId];
+  const oldStatus = p.status;
+  const updates = {
+    status: document.getElementById('e-status').value,
+    sala: document.getElementById('e-sala').value,
+    osoba: document.getElementById('e-osoba').value,
+    zwrot: document.getElementById('e-zwrot').value,
+    marka: document.getElementById('e-marka').value,
+    uwagi: document.getElementById('e-uwagi').value,
+  };
+  await fbUpdate(fbRef(fbDB, `products/${currentId}`), updates);
+  if (oldStatus !== updates.status) await addLog(p.nazwa, oldStatus, updates.status, updates.osoba||'—');
+  toast('Zapisano zmiany');
+  go('s-detail');
+  setTimeout(() => openDetail(currentId), 300);
+}
+
+async function deleteProduct() {
+  if (!confirm(`Usunąć "${products[currentId]?.nazwa}" z ewidencji?`)) return;
+  await fbRemove(fbRef(fbDB, `products/${currentId}`));
+  await addLog(products[currentId]?.nazwa||currentId, products[currentId]?.status||'—', 'USUNIĘTY', '—');
+  toast('Produkt usunięty');
+  go('s-products');
+}
+
+async function addLog(product, from, to, by) {
+  const entry = { ts: tsMs(), tss: tsNow(), product, from, to, by: by||'—' };
+  await fbPush(fbRef(fbDB, 'log'), entry);
+}
+
+function renderLog() {
+  const el = document.getElementById('log-list');
+  if (!logs.length) { el.innerHTML = '<div class="empty"><i class="ti ti-history"></i>Brak historii zmian</div>'; return; }
+  el.innerHTML = logs.map(l => `
+    <div class="log-item">
+      <div class="lt">${l.product}</div>
+      <div class="lm">${l.from} → ${l.to}${l.by&&l.by!=='—'?` · ${l.by}`:''}</div>
+      <div class="ld">${l.tss||''}</div>
+    </div>`).join('');
+}
+
+async function startScan(videoId, onResult) {
+  stopScan();
+  try {
+    scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:'environment', width:{ideal:1280}, height:{ideal:720} } });
+    const video = document.getElementById(videoId);
+    video.srcObject = scanStream;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    let lastCode = '';
+    scanInterval = setInterval(() => {
+      if (video.readyState < video.HAVE_ENOUGH_DATA) return;
+      canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+      ctx.drawImage(video,0,0);
+      const img = ctx.getImageData(0,0,canvas.width,canvas.height);
+      const code = jsQR(img.data, img.width, img.height, { inversionAttempts:'dontInvert' });
+      if (code && code.data && code.data !== lastCode) {
+        lastCode = code.data;
+        onResult(code.data);
+        setTimeout(()=>{ lastCode=''; }, 1800);
+      }
+    }, 250);
+  } catch(e) {
+    toast('Brak dostępu do kamery. Sprawdź uprawnienia w Chrome.');
+  }
+}
+
+function stopScan() {
+  if (scanInterval) { clearInterval(scanInterval); scanInterval=null; }
+  if (scanStream) { scanStream.getTracks().forEach(t=>t.stop()); scanStream=null; }
+}
+
+function startInventory() {
+  invSession = {};
+  go('s-inventory');
+  document.getElementById('inv-counter').textContent = `0 / ${Object.keys(products).length}`;
+  startScan('inv-video', data => {
+    if (products[data]) {
+      invSession[data] = true;
+      const p = products[data];
+      const cnt = Object.keys(invSession).length;
+      const total = Object.keys(products).length;
+      document.getElementById('inv-counter').textContent = `${cnt} / ${total}`;
+      document.getElementById('inv-last').innerHTML = `<span style="color:var(--green)"><i class="ti ti-check"></i> ${p.nazwa}</span>`;
+    } else {
+      document.getElementById('inv-last').innerHTML = `<span style="color:var(--red)">Nieznany kod: ${data.slice(0,20)}</span>`;
+    }
+  });
+}
+
+function renderInvList() {
+  const all = Object.values(products).filter(p => p.status !== 'Zlikwidowany');
+  const ok = all.filter(p => invSession[p.id]);
+  const miss = all.filter(p => !invSession[p.id]);
+  document.getElementById('inv-ok-n').textContent = ok.length;
+  document.getElementById('inv-miss-n').textContent = miss.length;
+  document.getElementById('inv-list').innerHTML =
+    (miss.length ? `<div class="sec-title">Nieznalezione (${miss.length})</div>` + miss.map(p=>`
+      <div class="inv-item">
+        <div class="inv-check miss"><i class="ti ti-x"></i></div>
+        <div class="iname"><div class="in">${p.nazwa}</div><div class="im">${p.sala} · ${badge(p.status)}</div></div>
+      </div>`).join('') : '') +
+    (ok.length ? `<div class="sec-title">Potwierdzone (${ok.length})</div>` + ok.map(p=>`
+      <div class="inv-item">
+        <div class="inv-check ok"><i class="ti ti-check"></i></div>
+        <div class="iname"><div class="in">${p.nazwa}</div></div>
+      </div>`).join('') : '');
+}
+
+async function finishInventory() {
+  if (!Object.keys(invSession).length) { toast('Nie zeskanowano żadnego produktu'); return; }
+  const all = Object.values(products).filter(p => p.status !== 'Zlikwidowany' && p.status !== 'Brak – do wyjaśnienia');
+  const missing = all.filter(p => !invSession[p.id]);
+  let changed = 0;
+  for (const p of missing) {
+    await fbUpdate(fbRef(fbDB, `products/${p.id}`), { status: 'Brak – do wyjaśnienia' });
+    await addLog(p.nazwa, p.status, 'Brak – do wyjaśnienia', 'inwentura');
+    changed++;
+  }
+  stopScan();
+  refreshHome();
+  toast(`Inwentura zakończona. Sprawdzono: ${Object.keys(invSession).length}, oznaczono brak: ${changed}.`);
+  go('s-home');
+}
+
+function startScanFind() {
+  document.getElementById('find-hint').textContent = 'Skieruj kamerę na kod QR...';
+  startScan('find-video', data => {
+    if (products[data]) {
+      stopScan();
+      document.getElementById('find-hint').innerHTML = `<span style="color:var(--green)"><i class="ti ti-check"></i> Znaleziono!</span>`;
+      setTimeout(() => { openDetail(data, 's-products'); }, 400);
+    } else {
+      document.getElementById('find-hint').innerHTML = `<span style="color:var(--red)">Nieznany kod QR</span>`;
+    }
+  });
+}
+</script>
+</body>
+</html>
