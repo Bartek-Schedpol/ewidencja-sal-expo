@@ -13130,22 +13130,62 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 </head>
 <body>
 <div id="loading"><i class="ti ti-building-store"></i><div class="spinner"></div><p>Łączenie z bazą danych...</p></div>
-<div id="print-area"><div class="pa-name" id="pa-name"></div><div class="pa-meta" id="pa-meta"></div><canvas id="pa-canvas" width="220" height="220"></canvas><div class="pa-id" id="pa-id"></div></div>
+<div id="print-area"><div style="text-align:center;padding:20px;font-family:-apple-system,sans-serif"><canvas id="pa-canvas" width="220" height="220" style="display:block;margin:0 auto;border-radius:4px"></canvas><div id="pa-nazwa" style="font-size:15px;font-weight:700;margin-top:10px;color:#000"></div><div id="pa-marka" style="font-size:12px;color:#444;margin-top:3px"></div><div id="pa-kod" style="font-size:12px;font-family:monospace;color:#333;margin-top:3px"></div><div id="pa-wymiary" style="font-size:11px;color:#666;margin-top:2px"></div><div id="pa-sala" style="font-size:10px;color:#888;margin-top:4px;border-top:0.5px solid #ddd;padding-top:4px"></div><div id="pa-id" style="font-size:9px;color:#bbb;margin-top:2px;font-family:monospace"></div></div></div>
 <div class="app" id="app">
 <div id="s-pin" class="screen active"><div class="pin-wrap"><div class="pin-logo"><i class="ti ti-building-store"></i></div><div class="pin-title">Ewidencja sal</div><div class="pin-sub">Schedpol — Trade Marketing</div><div class="pin-dots"><div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div><div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div></div><div class="pin-err" id="pin-err"></div><div class="pin-pad"><button class="pin-btn" onclick="pp('1')">1</button><button class="pin-btn" onclick="pp('2')">2</button><button class="pin-btn" onclick="pp('3')">3</button><button class="pin-btn" onclick="pp('4')">4</button><button class="pin-btn" onclick="pp('5')">5</button><button class="pin-btn" onclick="pp('6')">6</button><button class="pin-btn" onclick="pp('7')">7</button><button class="pin-btn" onclick="pp('8')">8</button><button class="pin-btn" onclick="pp('9')">9</button><button class="pin-btn small" onclick="pp('X')">Zarząd</button><button class="pin-btn" onclick="pp('0')">0</button><button class="pin-btn small" onclick="pinBack()"><i class="ti ti-backspace"></i></button></div><div class="pin-note">Skontaktuj się z Liderem TM w celu uzyskania PIN</div></div></div>
-<div id="s-home" class="screen"><div class="topbar"><i class="ti ti-building-store" style="color:var(--blue);cursor:default"></i><h1>Sale pokazowe</h1><i class="ti ti-refresh" onclick="loadProducts(true)"></i><i class="ti ti-logout" onclick="logout()"></i></div><div class="stats-grid" id="home-stats"></div><div class="nav-grid"><div class="nav-btn" onclick="go('s-products')"><i class="ti ti-package"></i><div class="nb-title">Wszystkie produkty</div><div class="nb-sub">lista &amp; edycja</div></div><div class="nav-btn" id="btn-add" onclick="go('s-add')"><i class="ti ti-plus"></i><div class="nb-title">Dodaj produkt</div><div class="nb-sub">nowy wpis</div></div><div class="nav-btn" onclick="startInventory()"><i class="ti ti-clipboard-check"></i><div class="nb-title">Inwentura</div><div class="nb-sub">skanuj QR</div></div><div class="nav-btn" onclick="go('s-inv-history')"><i class="ti ti-clipboard-list"></i><div class="nb-title">Hist. inwentur</div><div class="nb-sub">poprzednie sesje</div></div><div class="nav-btn" onclick="go('s-log')"><i class="ti ti-history"></i><div class="nb-title">Historia zmian</div><div class="nb-sub">zmiany statusów</div></div><div class="nav-btn" onclick="go('s-sales')"><i class="ti ti-layout-grid"></i><div class="nb-title">Według sal</div><div class="nb-sub">filtruj po sali</div></div></div><div class="sec-title">Wymagające uwagi</div><div id="home-alerts"></div></div>
+<div id="s-home" class="screen"><div class="topbar"><i class="ti ti-building-store" style="color:var(--blue);cursor:default"></i><h1>Sale pokazowe</h1><i class="ti ti-refresh" onclick="loadProducts(true)"></i><i class="ti ti-logout" onclick="logout()"></i></div><div class="stats-grid" id="home-stats"></div><div class="nav-grid"><div class="nav-btn" onclick="go('s-products')"><i class="ti ti-package"></i><div class="nb-title">Wszystkie produkty</div><div class="nb-sub">lista &amp; edycja</div></div><div class="nav-btn" id="btn-add" onclick="go('s-add')"><i class="ti ti-plus"></i><div class="nb-title">Dodaj produkt</div><div class="nb-sub">nowy wpis</div></div><div class="nav-btn" onclick="startInventory()"><i class="ti ti-clipboard-check"></i><div class="nb-title">Inwentura</div><div class="nb-sub">skanuj QR</div></div><div class="nav-btn" onclick="go('s-inv-history')"><i class="ti ti-clipboard-list"></i><div class="nb-title">Hist. inwentur</div><div class="nb-sub">poprzednie sesje</div></div><div class="nav-btn" onclick="go('s-log')"><i class="ti ti-history"></i><div class="nb-title">Historia zmian</div><div class="nb-sub">zmiany statusów</div></div><div class="nav-btn" onclick="go('s-sales')"><i class="ti ti-layout-grid"></i><div class="nb-title">Według sal</div><div class="nb-sub">filtruj po sali</div></div><div class="nav-btn" id="btn-export-import" onclick="go('s-export-import')"><i class="ti ti-database-export"></i><div class="nb-title">Eksport / Import</div><div class="nb-sub">CSV backup</div></div></div><div class="sec-title">Wymagające uwagi</div><div id="home-alerts"></div></div>
 <div id="s-sales" class="screen"><div class="topbar"><i class="ti ti-arrow-left" onclick="go('s-home')"></i><h1>Według sal</h1></div><div style="padding:12px 0" id="sales-list"></div></div>
 <div id="s-sala-detail" class="screen"><div class="topbar"><i class="ti ti-arrow-left" onclick="go('s-sales')"></i><h1 id="sala-detail-title">Sala</h1></div><div id="sala-detail-list"></div></div>
 <div id="s-products" class="screen"><div class="topbar"><i class="ti ti-arrow-left" onclick="go('s-home')"></i><h1>Produkty</h1><i class="ti ti-qrcode" onclick="go('s-scan-find')"></i></div><div class="search-wrap"><i class="ti ti-search"></i><input type="text" placeholder="Szukaj po nazwie, kodzie, marce..." id="search-in" oninput="renderProducts()"></div><div class="filter-pills" id="filter-pills"></div><div id="product-list"></div></div>
 <div id="s-add" class="screen"><div class="topbar"><i class="ti ti-arrow-left" onclick="go('s-home')"></i><h1>Nowy produkt</h1></div><div class="form-section"><div class="form-group" id="fg-kod"><label>Kod handlowy <span class="req">*</span></label><input type="text" id="f-kod" placeholder="np. BRO-120-80-01" oninput="clearErr('fg-kod')"><div class="err">Kod jest już zajęty przez inny produkt</div></div><div class="form-group" id="fg-nazwa"><label>Nazwa produktu <span class="req">*</span></label><input type="text" id="f-nazwa" placeholder="np. Brodzik akrylowy 120x80"><div class="err">Podaj nazwę produktu</div></div><div class="form-group"><label>Wymiary produktu</label><input type="text" id="f-wymiary" placeholder="np. 120x80x5 cm"></div><div class="form-group"><label>Marka</label><input type="text" id="f-marka" placeholder="np. Schedline"></div><div class="form-group" id="fg-sala"><label>Lokalizacja <span class="req">*</span></label><select id="f-sala"><option value="">— wybierz salę —</option><option>Sala Niezawodności</option><option>Sala Showroom</option></select><div class="err">Wybierz lokalizację</div></div><div class="form-group"><label>Status</label><select id="f-status"><option>Na ekspozycji</option><option>Wypożyczony – dla klienta</option><option>Wypożyczony – handlowiec</option><option>Na testach / prezentacji</option><option>W serwisie</option><option>Zdemontowany / zdjęty z ekspozycji</option><option>Zlikwidowany</option><option>Brak – do wyjaśnienia</option></select></div><div class="form-group"><label>Typ produktu</label><select id="f-typ"><option value="standardowy">Standardowy</option><option value="prototyp">Prototyp</option><option value="próbka">Próbka</option><option value="element ekspozycyjny">Element ekspozycyjny</option></select></div><div class="form-group"><label>Uwagi</label><textarea id="f-uwagi" placeholder="Opcjonalne uwagi..."></textarea></div></div><button class="btn-primary" onclick="saveProduct()">Zapisz produkt</button><button class="btn-secondary" onclick="go('s-home')">Anuluj</button></div>
 <div id="s-detail" class="screen"><div class="topbar"><i class="ti ti-arrow-left" id="detail-back" onclick="go('s-products')"></i><h1 id="detail-title">Produkt</h1><i class="ti ti-edit" id="btn-edit" onclick="openEdit()"></i></div><div id="detail-body"></div><div class="qr-box no-print"><div class="qr-hint">Kod QR do wydruku i naklejenia na produkt</div><canvas id="qr-canvas" width="180" height="180"></canvas><div class="qr-label" id="qr-id-label"></div><button class="btn-secondary no-print" style="margin-top:14px" onclick="printQR()"><i class="ti ti-printer" style="margin-right:6px"></i>Drukuj / zapisz kod QR</button></div></div>
 <div id="s-edit" class="screen"><div class="topbar"><i class="ti ti-arrow-left" onclick="go('s-detail')"></i><h1>Edytuj produkt</h1></div><div class="form-section"><div class="form-group" id="eg-kod"><label>Kod handlowy</label><input type="text" id="e-kod" oninput="clearErr('eg-kod')"><div class="err">Kod jest już zajęty przez inny produkt</div></div><div class="form-group"><label>Nazwa produktu</label><input type="text" id="e-nazwa"></div><div class="form-group"><label>Wymiary produktu</label><input type="text" id="e-wymiary" placeholder="np. 120x80x5 cm"></div><div class="form-group"><label>Zmień status</label><select id="e-status"><option>Na ekspozycji</option><option>Wypożyczony – dla klienta</option><option>Wypożyczony – handlowiec</option><option>Na testach / prezentacji</option><option>W serwisie</option><option>Zdemontowany / zdjęty z ekspozycji</option><option>Zlikwidowany</option><option>Brak – do wyjaśnienia</option></select></div><div class="form-group"><label>Lokalizacja</label><select id="e-sala"><option>Sala Niezawodności</option><option>Sala Showroom</option></select></div><div class="form-group"><label>Osoba / dział pobierający</label><input type="text" id="e-osoba" placeholder="np. Jan Kowalski / Dział Handlowy"></div><div class="form-group"><label>Planowany zwrot</label><input type="date" id="e-zwrot"></div><div class="form-group"><label>Marka</label><input type="text" id="e-marka"></div><div class="form-group"><label>Uwagi</label><textarea id="e-uwagi"></textarea></div></div><button class="btn-primary" onclick="updateProduct()">Zapisz zmiany</button><button class="btn-secondary" onclick="go('s-detail')">Anuluj</button><button class="btn-danger" onclick="deleteProduct()">Usuń produkt z ewidencji</button></div>
-<div id="s-inv-sala" class="screen"><div class="topbar"><i class="ti ti-arrow-left" onclick="go('s-home')"></i><h1>Wybierz salę</h1></div><div style="padding:16px 0"><div style="font-size:13px;color:var(--color-text-secondary);padding:0 16px 12px">Wybierz salę, która ma być inwentaryzowana:</div><div id="inv-sala-list"></div></div></div><div id="s-inventory" class="screen"><div class="topbar"><i class="ti ti-arrow-left" onclick="stopScan();go('s-inv-sala')"></i><h1 id="inv-title">Inwentura</h1><span id="inv-counter" style="font-size:13px;color:var(--text2)"></span></div><div class="scan-wrapper"><div style="font-size:13px;color:var(--text2);margin-bottom:12px">Skanuj kody QR przyklejone do produktów.</div><div class="scan-area"><video id="inv-video" autoplay playsinline muted></video><div class="scan-overlay"><div class="scan-frame"></div></div></div><div class="scan-hint" id="inv-last">Skieruj kamerę na kod QR...</div></div><button class="btn-secondary" onclick="stopScan();go('s-inv-list')"><i class="ti ti-list" style="margin-right:6px"></i>Pokaż wyniki inwentury</button><button class="btn-secondary" onclick="stopScan();go('s-home')"><i class="ti ti-x" style="margin-right:6px"></i>Anuluj inwenturę</button></div>
+<div id="s-inv-sala" class="screen"><div class="topbar"><i class="ti ti-arrow-left" onclick="go('s-home')"></i><h1>Inwentura</h1></div><div style="padding:16px 0">
+<div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;padding:0 16px 8px">Wybierz salę</div>
+<div id="inv-sala-list"></div>
+<div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;padding:12px 16px 8px">Tryb inwentury</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 12px">
+<div id="inv-mode-scan" class="nav-btn inv-mode-btn active-mode" onclick="setInvMode('scan')" style="border:2px solid var(--blue)"><i class="ti ti-qrcode"></i><div class="nb-title">Skanowanie QR</div><div class="nb-sub">kamerą telefonu</div></div>
+<div id="inv-mode-list" class="nav-btn inv-mode-btn" onclick="setInvMode('list')"><i class="ti ti-list-check"></i><div class="nb-title">Z listy</div><div class="nb-sub">odhaczaj ręcznie</div></div>
+</div>
+</div></div><div id="s-inventory" class="screen"><div class="topbar"><i class="ti ti-arrow-left" onclick="stopScan();go('s-inv-sala')"></i><h1 id="inv-title">Inwentura</h1><span id="inv-counter" style="font-size:13px;color:var(--text2)"></span></div><div class="scan-wrapper"><div style="font-size:13px;color:var(--text2);margin-bottom:12px">Skanuj kody QR przyklejone do produktów.</div><div class="scan-area"><video id="inv-video" autoplay playsinline muted></video><div class="scan-overlay"><div class="scan-frame"></div></div></div><div class="scan-hint" id="inv-last">Skieruj kamerę na kod QR...</div></div><button class="btn-secondary" onclick="stopScan();go('s-inv-list')"><i class="ti ti-list" style="margin-right:6px"></i>Pokaż wyniki inwentury</button><button class="btn-secondary" onclick="stopScan();go('s-home')"><i class="ti ti-x" style="margin-right:6px"></i>Anuluj inwenturę</button></div>
+<div id="s-inv-manual" class="screen"><div class="topbar"><i class="ti ti-arrow-left" onclick="go('s-inv-sala')"></i><h1 id="inv-manual-title">Inwentura — lista</h1><span id="inv-manual-counter" style="font-size:13px;color:var(--color-text-secondary)"></span></div>
+<div style="font-size:13px;color:var(--color-text-secondary);padding:10px 16px 6px">Odhaczaj produkty które są obecne na sali:</div>
+<div id="inv-manual-list"></div>
+<button class="btn-primary" onclick="finishManualInventory()">Zakończ i zapisz inwenturę</button>
+<button class="btn-secondary" onclick="go('s-inv-sala')">Anuluj bez zapisu</button>
+</div>
 <div id="s-inv-list" class="screen"><div class="topbar"><i class="ti ti-arrow-left" onclick="go('s-inventory')"></i><h1>Wyniki inwentury</h1></div><div class="stats-grid"><div class="stat"><div class="val" style="color:var(--green)" id="inv-ok-n">0</div><div class="lbl">Zeskanowane</div></div><div class="stat"><div class="val" style="color:var(--red)" id="inv-miss-n">0</div><div class="lbl">Nieznalezione</div></div></div><div id="inv-list"></div><button class="btn-primary" onclick="finishInventory()">Zakończ i zapisz inwenturę</button><button class="btn-secondary" onclick="go('s-inventory')">Wróć do skanowania</button><button class="btn-secondary" onclick="stopScan();go('s-home')">Anuluj bez zapisu</button></div>
 <div id="s-inv-history" class="screen"><div class="topbar"><i class="ti ti-arrow-left" onclick="go('s-home')"></i><h1>Historia inwentur</h1></div><div id="inv-history-list"></div></div>
 <div id="s-inv-hist-detail" class="screen"><div class="topbar"><i class="ti ti-arrow-left" onclick="go('s-inv-history')"></i><h1 id="inv-hist-detail-title">Inwentura</h1></div><div id="inv-hist-detail-body"></div></div>
 <div id="s-scan-find" class="screen"><div class="topbar"><i class="ti ti-arrow-left" onclick="stopScan();go('s-products')"></i><h1>Skanuj kod QR</h1></div><div class="scan-wrapper"><div style="font-size:13px;color:var(--text2);margin-bottom:12px">Skieruj kamerę na kod QR naklejony na produkcie.</div><div class="scan-area"><video id="find-video" autoplay playsinline muted></video><div class="scan-overlay"><div class="scan-frame"></div></div><div class="scan-hint" id="find-hint">Oczekiwanie na skan...</div></div></div><button class="btn-secondary" onclick="stopScan();go('s-products')">Anuluj</button></div>
 <div id="s-log" class="screen"><div class="topbar"><i class="ti ti-arrow-left" onclick="go('s-home')"></i><h1>Historia zmian</h1></div><div id="log-list"></div></div>
+
+<div id="s-export-import" class="screen"><div class="topbar"><i class="ti ti-arrow-left" onclick="go('s-home')"></i><h1>Eksport / Import</h1></div><div style="padding:16px">
+<div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:20px">Eksportuj całą bazę do pliku CSV lub wczytaj plik CSV, aby dociągnąć brakujące produkty.</div>
+<div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Eksport</div>
+<button class="btn-primary" onclick="exportCSV()"><i class="ti ti-download" style="margin-right:8px"></i>Pobierz bazę jako CSV</button>
+<div style="font-size:11px;color:var(--color-text-secondary);padding:0 12px;margin-bottom:24px">Pobiera wszystkie produkty z Firebase do pliku CSV.</div>
+<div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Import</div>
+<div style="margin:0 12px 8px;border:1.5px dashed var(--color-border-secondary);border-radius:var(--border-radius-lg);padding:20px;text-align:center;cursor:pointer" onclick="document.getElementById('csv-file-input').click()">
+<i class="ti ti-file-text" style="font-size:28px;color:var(--color-text-secondary);display:block;margin-bottom:8px"></i>
+<div style="font-size:13px;font-weight:500">Kliknij aby wybrać plik CSV</div>
+<div style="font-size:11px;color:var(--color-text-secondary);margin-top:4px">lub przeciągnij i upuść</div>
+</div>
+<input type="file" id="csv-file-input" accept=".csv" style="display:none" onchange="handleCSVImport(this)">
+<div id="import-preview" style="margin:0 12px;display:none">
+<div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:8px">Podgląd importu:</div>
+<div id="import-stats" style="font-size:13px;margin-bottom:12px"></div>
+<div id="import-table-wrap" style="overflow-x:auto;max-height:240px;overflow-y:auto;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md)"></div>
+<button class="btn-primary" style="margin-top:12px" onclick="confirmImport()"><i class="ti ti-upload" style="margin-right:8px"></i>Dociągnij brakujące produkty</button>
+<button class="btn-secondary" onclick="cancelImport()">Anuluj</button>
+</div>
+<div style="margin:16px 12px 0;padding:12px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);font-size:11px;color:var(--color-text-secondary);line-height:1.7">
+<strong>Format CSV:</strong> pierwsze 3 kolumny obowiązkowe.<br>
+<code style="font-size:10px">kod,nazwa,wymiary,marka,sala,typ,status,uwagi</code><br>
+Sala: <code style="font-size:10px">Sala Niezawodności</code> lub <code style="font-size:10px">Sala Showroom</code>
+</div>
+</div></div>
 </div>
 <div id="toast"></div>
 <script>
@@ -13221,6 +13261,7 @@ function onLogin() {
   const v = userRole === "viewer";
   document.getElementById("btn-add").style.opacity = v ? ".4" : "1";
   document.getElementById("btn-add").style.pointerEvents = v ? "none" : "";
+  const eiBtn = document.getElementById("btn-export-import"); if(eiBtn){ eiBtn.style.opacity = v ? ".4" : "1"; eiBtn.style.pointerEvents = v ? "none" : ""; }
   refreshHome(); go("s-home");
 }
 function logout() { userRole = null; stopScan(); go("s-pin"); }
@@ -13361,6 +13402,11 @@ function openDetail(id, backScreen) {
   ).join("");
   try { QRCode.toCanvas(document.getElementById("qr-canvas"), p.id, {width:180,margin:2,color:{dark:"#000000",light:"#ffffff"}}); } catch(e) { console.error("QR",e); }
   document.getElementById("qr-id-label").textContent = p.id;
+  const qrPreview = document.getElementById("qr-text-preview");
+  if (qrPreview) {
+    const lines = [p.nazwa, p.marka, p.kod ? "Kod: " + p.kod : "", p.wymiary ? "Wymiary: " + p.wymiary : ""].filter(Boolean);
+    qrPreview.innerHTML = lines.map(l => "<div>" + l + "</div>").join("");
+  }
   go("s-detail");
 }
 
@@ -13370,8 +13416,11 @@ function printQR() {
   const sala = (p.sala||"").replace(/s*(.*)/,"").replace(/s+/g,"-");
   const parts = [sala, p.nazwa, p.kod, p.wymiary].filter(Boolean);
   const filename = parts.join(" - ").replace(/[/\?%*:|"<>]/g, "-");
-  document.getElementById("pa-name").textContent = p.nazwa;
-  document.getElementById("pa-meta").textContent = [sala, p.kod, p.wymiary].filter(Boolean).join(" | ");
+  document.getElementById("pa-nazwa").textContent = p.nazwa || "";
+  document.getElementById("pa-marka").textContent = p.marka || "";
+  document.getElementById("pa-kod").textContent = p.kod ? "Kod: " + p.kod : "";
+  document.getElementById("pa-wymiary").textContent = p.wymiary ? "Wymiary: " + p.wymiary : "";
+  document.getElementById("pa-sala").textContent = p.sala || "";
   document.getElementById("pa-id").textContent = p.id;
   try {
     QRCode.toCanvas(document.getElementById("pa-canvas"), p.id, {width:220,margin:2,color:{dark:"#000000",light:"#ffffff"}}, () => {
@@ -13506,8 +13555,20 @@ function renderInvSalaPicker() {
     "<div><i class='ti ti-chevron-right' style='font-size:20px;color:var(--color-text-secondary)'></i></div></div>"
   ).join("");
 }
+let invMode = "scan";
+function setInvMode(mode) {
+  invMode = mode;
+  const scanBtn = document.getElementById("inv-mode-scan");
+  const listBtn = document.getElementById("inv-mode-list");
+  if (scanBtn) { scanBtn.classList.toggle("active-mode", mode === "scan"); scanBtn.style.border = mode === "scan" ? "2px solid var(--blue)" : "0.5px solid var(--border)"; }
+  if (listBtn) { listBtn.classList.toggle("active-mode", mode === "list"); listBtn.style.border = mode === "list" ? "2px solid var(--blue)" : "0.5px solid var(--border)"; }
+}
 function pickInvSala(sala) {
-  startInventoryForSala(sala);
+  if (invMode === "list") {
+    startManualInventory(sala);
+  } else {
+    startInventoryForSala(sala);
+  }
 }
 function startInventoryForSala(sala) {
   invSession = {};
@@ -13548,6 +13609,59 @@ function renderInvList() {
   document.getElementById("inv-list").innerHTML =
     (miss.length ? "<div class='sec-title'>Nieznalezione (" + miss.length + ")</div>" + miss.map(p => mkItem(p,false)).join("") : "") +
     (ok.length   ? "<div class='sec-title'>Potwierdzone (" + ok.length + ")</div>"   + ok.map(p => mkItem(p,true)).join("")  : "");
+}
+
+function startManualInventory(sala) {
+  invSession = {};
+  invCurrentSala = sala;
+  const titleEl = document.getElementById("inv-manual-title");
+  if (titleEl) titleEl.textContent = "Inwentura — " + sala;
+  renderManualList();
+  go("s-inv-manual");
+}
+
+function renderManualList() {
+  const arr = Object.values(products).filter(p =>
+    p.status !== "Zlikwidowany" && (!invCurrentSala || p.sala === invCurrentSala)
+  ).sort((a,b) => (a.nazwa||"").localeCompare(b.nazwa||""));
+  const counter = document.getElementById("inv-manual-counter");
+  if (counter) counter.textContent = "0 / " + arr.length;
+  document.getElementById("inv-manual-list").innerHTML = arr.map(p =>
+    "<div class='inv-check-item" + (invSession[p.id] ? " checked" : "") + "' id='mci-" + p.id + "' data-pid='" + p.id + "' onclick='toggleManualItem(this.dataset.pid)'>" +
+    "<div class='inv-cb" + (invSession[p.id] ? " on" : "") + "' id='mcb-" + p.id + "'>" +
+    (invSession[p.id] ? "<i class='ti ti-check' style='font-size:14px'></i>" : "") +
+    "</div>" +
+    "<div class='inv-item-info'>" +
+    "<div class='inv-item-name'>" + (p.typ === "prototyp" ? "<span class='dot-proto'></span>" : "") + p.nazwa + "</div>" +
+    "<div class='inv-item-meta'>" + [p.kod, p.marka, p.wymiary].filter(Boolean).join(" · ") + " · " + badge(p.status) + "</div>" +
+    "</div></div>"
+  ).join("");
+}
+
+function toggleManualItem(id) {
+  if (invSession[id]) {
+    delete invSession[id];
+  } else {
+    invSession[id] = true;
+  }
+  const item = document.getElementById("mci-" + id);
+  const cb = document.getElementById("mcb-" + id);
+  if (item) item.classList.toggle("checked", !!invSession[id]);
+  if (cb) {
+    cb.classList.toggle("on", !!invSession[id]);
+    cb.innerHTML = invSession[id] ? "<i class='ti ti-check' style='font-size:14px'></i>" : "";
+  }
+  const arr = Object.values(products).filter(p => p.status !== "Zlikwidowany" && (!invCurrentSala || p.sala === invCurrentSala));
+  const counter = document.getElementById("inv-manual-counter");
+  if (counter) counter.textContent = Object.keys(invSession).length + " / " + arr.length;
+}
+
+async function finishManualInventory() {
+  if (!Object.keys(invSession).length) {
+    if (!confirm("Nie zaznaczono żadnego produktu. Kontynuować? Wszystkie produkty zostaną oznaczone jako brak.")) return;
+  }
+  await finishInventory();
+  go("s-home");
 }
 
 async function finishInventory() {
@@ -13608,6 +13722,157 @@ function startScanFind() {
     }
   });
 }
+function exportCSV() {
+  const arr = Object.values(products);
+  if (!arr.length) { toast("Baza jest pusta — brak danych do eksportu"); return; }
+  const headers = ["id","kod","nazwa","wymiary","marka","sala","typ","status","osoba","zwrot","uwagi","created"];
+  const escape = v => {
+    if (v === null || v === undefined) return "";
+    const s = String(v);
+    if (s.includes(",") || s.includes('"') || s.indexOf(String.fromCharCode(10)) > -1) return '"' + s.replace(/"/g,'""') + '"';
+    return s;
+  };
+  const rows = arr.map(p => headers.map(h => escape(p[h]||"")).join(","));
+  const csv = [headers.join(","), ...rows].join(String.fromCharCode(10));
+  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  const now = new Date().toLocaleDateString("pl-PL").replace(/./g,"-");
+  a.download = "ewidencja-sal-" + now + ".csv";
+  a.click();
+  URL.revokeObjectURL(url);
+  toast("Pobrano " + arr.length + " produktów do CSV");
+}
+
+let importBuffer = [];
+
+function parseCSV(text) {
+  const lines = text.split(String.fromCharCode(10)).map(function(l){return l.split("").filter(function(c){return c.charCodeAt(0)!==13}).join("")}).filter(l => l.trim());
+  if (!lines.length) return [];
+  const parseRow = line => {
+    const cols = []; let cur = ""; let inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"' && !inQ) { inQ = true; }
+      else if (c === '"' && inQ && line[i+1] === '"') { cur += '"'; i++; }
+      else if (c === '"' && inQ) { inQ = false; }
+      else if (c === "," && !inQ) { cols.push(cur.trim()); cur = ""; }
+      else { cur += c; }
+    }
+    cols.push(cur.trim());
+    return cols;
+  };
+  const headers = parseRow(lines[0]).map(h => h.toLowerCase().replace(/﻿/g,""));
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const vals = parseRow(lines[i]);
+    if (vals.every(v => !v)) continue;
+    const obj = {};
+    headers.forEach((h,idx) => { obj[h] = vals[idx] || ""; });
+    rows.push(obj);
+  }
+  return rows;
+}
+
+function handleCSVImport(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const rows = parseCSV(e.target.result);
+    if (!rows.length) { toast("Plik jest pusty lub nieprawidłowy"); return; }
+    const existingKody = new Set(Object.values(products).map(p => (p.kod||"").toLowerCase()).filter(Boolean));
+    const existingNazwy = new Set(Object.values(products).map(p => (p.nazwa||"").toLowerCase()));
+    const toAdd = [];
+    const skipped = [];
+    rows.forEach(row => {
+      const kod = (row.kod||"").trim();
+      const nazwa = (row.nazwa||row.name||"").trim();
+      if (!nazwa) { skipped.push(row); return; }
+      const kodLower = kod.toLowerCase();
+      const nazwaLower = nazwa.toLowerCase();
+      if ((kod && existingKody.has(kodLower)) || existingNazwy.has(nazwaLower)) {
+        skipped.push(row);
+      } else {
+        toAdd.push(row);
+      }
+    });
+    importBuffer = toAdd;
+    const preview = document.getElementById("import-preview");
+    const stats = document.getElementById("import-stats");
+    const tableWrap = document.getElementById("import-table-wrap");
+    preview.style.display = "block";
+    stats.innerHTML =
+      "<span style='color:var(--color-text-success)'>Do dodania: <strong>" + toAdd.length + "</strong></span>" +
+      " &nbsp;|&nbsp; " +
+      "<span style='color:var(--color-text-secondary)'>Pominiętych (już istnieje): <strong>" + skipped.length + "</strong></span>" +
+      " &nbsp;|&nbsp; Łącznie w pliku: <strong>" + rows.length + "</strong>";
+    if (toAdd.length) {
+      tableWrap.innerHTML =
+        "<table style='width:100%;border-collapse:collapse;font-size:11px'>" +
+        "<thead><tr style='background:var(--color-background-secondary)'>" +
+        "<th style='padding:6px 8px;text-align:left;border-bottom:0.5px solid var(--color-border-tertiary)'>Kod</th>" +
+        "<th style='padding:6px 8px;text-align:left;border-bottom:0.5px solid var(--color-border-tertiary)'>Nazwa</th>" +
+        "<th style='padding:6px 8px;text-align:left;border-bottom:0.5px solid var(--color-border-tertiary)'>Sala</th>" +
+        "<th style='padding:6px 8px;text-align:left;border-bottom:0.5px solid var(--color-border-tertiary)'>Wymiary</th>" +
+        "</tr></thead><tbody>" +
+        toAdd.map(r =>
+          "<tr style='border-bottom:0.5px solid var(--color-border-tertiary)'>" +
+          "<td style='padding:5px 8px'>" + (r.kod||"—") + "</td>" +
+          "<td style='padding:5px 8px'>" + (r.nazwa||r.name||"") + "</td>" +
+          "<td style='padding:5px 8px'>" + (r.sala||"—") + "</td>" +
+          "<td style='padding:5px 8px'>" + (r.wymiary||"—") + "</td>" +
+          "</tr>"
+        ).join("") +
+        "</tbody></table>";
+    } else {
+      tableWrap.innerHTML = "<div style='padding:16px;text-align:center;font-size:13px;color:var(--color-text-secondary)'>Wszystkie produkty z pliku już istnieją w bazie.</div>";
+    }
+  };
+  reader.readAsText(file, "UTF-8");
+}
+
+async function confirmImport() {
+  if (!importBuffer.length) { toast("Brak nowych produktów do dodania"); return; }
+  const VALID_SALES = ["Sala Niezawodności","Sala Showroom"];
+  const VALID_TYPES = ["standardowy","prototyp","próbka","element ekspozycyjny"];
+  const VALID_STATUSES = ["Na ekspozycji","Wypożyczony – dla klienta","Wypożyczony – handlowiec","Na testach / prezentacji","W serwisie","Zdemontowany / zdjęty z ekspozycji","Zlikwidowany","Brak – do wyjaśnienia"];
+  let added = 0;
+  for (const row of importBuffer) {
+    const nazwa = (row.nazwa||row.name||"").trim();
+    if (!nazwa) continue;
+    const id = row.id && !products[row.id] ? row.id : uid();
+    const sala = VALID_SALES.includes(row.sala) ? row.sala : "Sala Niezawodności";
+    const typ = VALID_TYPES.includes(row.typ) ? row.typ : "standardowy";
+    const status = VALID_STATUSES.includes(row.status) ? row.status : "Na ekspozycji";
+    const p = {
+      id, nazwa, sala, typ, status,
+      kod: row.kod||"",
+      marka: row.marka||"",
+      wymiary: row.wymiary||"",
+      uwagi: row.uwagi||"",
+      osoba: row.osoba||"",
+      zwrot: row.zwrot||"",
+      created: row.created || tsNow()
+    };
+    await fbSet(fbRef(fbDB,"products/"+id), p);
+    added++;
+  }
+  await addLog("Import CSV","—", added + " produktów","import");
+  importBuffer = [];
+  document.getElementById("import-preview").style.display = "none";
+  document.getElementById("csv-file-input").value = "";
+  toast("Dodano " + added + " produktów z CSV");
+  refreshHome();
+}
+
+function cancelImport() {
+  importBuffer = [];
+  document.getElementById("import-preview").style.display = "none";
+  document.getElementById("csv-file-input").value = "";
+}
+
 </script>
 </body>
 </html>
