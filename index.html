@@ -12964,7 +12964,16 @@ window.QRCode = QRCode;
   import { getDatabase, ref, set, get, update, remove, onValue, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   try {
-    const app = initializeApp({ databaseURL: "https://ewidencja-sal-eksp-2026-default-rtdb.europe-west1.firebasedatabase.app/" });
+    const app = initializeApp({
+      apiKey: "AIzaSyBbz_1r6WcBwbCh48scmJnM2up4r4Lys2E",
+      authDomain: "ewidencja-sal-eksp-2026.firebaseapp.com",
+      databaseURL: "https://ewidencja-sal-eksp-2026-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "ewidencja-sal-eksp-2026",
+      storageBucket: "ewidencja-sal-eksp-2026.firebasestorage.app",
+      messagingSenderId: "595434790145",
+      appId: "1:595434790145:web:fb07bb9ad9cf2b6c014f00",
+      measurementId: "G-KQVWZN7BTD"
+    });
     const db = getDatabase(app);
     const auth = getAuth(app);
     window._fb = { db, ref, set, get, update, remove, onValue, push, auth, signInWithEmailAndPassword, signOut, onAuthStateChanged };
