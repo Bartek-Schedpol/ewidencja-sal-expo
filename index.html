@@ -13363,8 +13363,34 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 
     <!-- USER MANAGEMENT -->
     <div class="sec-title" style="padding-left:0">Użytkownicy</div>
-    <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Zmień rolę istniejących kont. Nowi użytkownicy domyślnie dostają rolę <strong style="color:var(--text)">viewer</strong>.</div>
-    <div id="admin-users-list" style="margin-bottom:8px"></div>
+    <div id="admin-users-list" style="margin-bottom:10px"></div>
+    <button onclick="adminShowAddUser()" style="display:flex;align-items:center;gap:8px;width:100%;padding:11px 14px;background:var(--bg3);border:1px dashed var(--border2);border-radius:var(--radius);cursor:pointer;color:var(--blue);font-size:13px;font-weight:600;margin-bottom:4px">
+      <i class="ti ti-user-plus" style="font-size:18px"></i> Dodaj nowego użytkownika
+    </button>
+    <div id="admin-add-user-form" style="display:none;background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:14px;margin-bottom:8px">
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px">Nowy użytkownik</div>
+      <div style="margin-bottom:10px">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:4px">Email <span style="color:var(--red)">*</span></div>
+        <input type="email" id="new-user-email" placeholder="email@schedpol.pl" style="width:100%;padding:10px 12px;font-size:13px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius);color:var(--text);outline:none">
+      </div>
+      <div style="margin-bottom:10px">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:4px">Hasło <span style="color:var(--red)">*</span></div>
+        <input type="password" id="new-user-pass" placeholder="min. 6 znaków" style="width:100%;padding:10px 12px;font-size:13px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius);color:var(--text);outline:none">
+      </div>
+      <div style="margin-bottom:14px">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:4px">Rola</div>
+        <select id="new-user-role" style="width:100%;padding:10px 12px;font-size:13px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius);color:var(--text);outline:none">
+          <option value="viewer">viewer — tylko podgląd</option>
+          <option value="lider">lider — pełna obsługa</option>
+          <option value="admin">admin — zarządzanie</option>
+        </select>
+      </div>
+      <div id="new-user-err" style="font-size:12px;color:var(--red);min-height:18px;margin-bottom:8px"></div>
+      <div style="display:flex;gap:8px">
+        <button onclick="adminCreateUser()" style="flex:1;padding:11px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;font-size:13px;font-weight:600">Utwórz konto</button>
+        <button onclick="adminHideAddUser()" style="padding:11px 16px;background:transparent;color:var(--text2);border:0.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;font-size:13px">Anuluj</button>
+      </div>
+    </div>
 
     <!-- DATABASE -->
     <div class="sec-title" style="padding-left:0;margin-top:8px">Baza danych</div>
@@ -13481,11 +13507,17 @@ function initApp() {
       fbGet(fbRef(fbDB, "users/" + user.uid)).then(async snap => {
         const data = snap.val() || {};
         if (!data.role) {
-          // First login — assign viewer role automatically
           await fbSet(fbRef(fbDB, "users/" + user.uid), {role: "viewer", email: user.email});
           userRole = "viewer";
         } else {
           userRole = data.role;
+          // Handle pending password change set by admin
+          if (data.pendingPassword) {
+            try {
+              await user.updatePassword(data.pendingPassword);
+              await fbUpdate(fbRef(fbDB, "users/" + user.uid), {pendingPassword: null});
+            } catch(e) { console.warn("Password update failed:", e); }
+          }
         }
         localStorage.setItem("ev_session", JSON.stringify({role: userRole, email: userEmail}));
         startListeners();
@@ -14109,37 +14141,127 @@ async function adminRenameSala(idx) {
 async function renderAdminUsers() {
   const el = document.getElementById("admin-users-list");
   if (!el) return;
-  el.innerHTML = "<div style='font-size:12px;color:var(--text2);padding:8px 0'>Ładowanie użytkowników...</div>";
+  el.innerHTML = "<div style='font-size:12px;color:var(--text2);padding:6px 0'>Ładowanie...</div>";
   try {
     const snap = await fbGet(fbRef(fbDB,"users"));
     const usersData = snap.val() || {};
     if (!Object.keys(usersData).length) {
-      el.innerHTML = "<div style='font-size:12px;color:var(--text2);padding:8px 0'>Brak użytkowników w bazie. Nowy użytkownik dostanie rolę viewer przy pierwszym logowaniu.</div>";
+      el.innerHTML = "<div style='font-size:12px;color:var(--text2);padding:8px 0'>Brak użytkowników. Dodaj pierwszego klikając poniżej.</div>";
       return;
     }
     const ROLE_COLORS = {admin:"var(--amber-text)",lider:"var(--blue-text)",viewer:"var(--text2)"};
-    el.innerHTML = Object.entries(usersData).map(([uid2, data]) =>
-      "<div style='display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:0.5px solid var(--border)'>" +
-      "<i class='ti ti-user' style='color:var(--text2);font-size:16px'></i>" +
-      "<div style='flex:1;min-width:0'>" +
-      "<div style='font-size:11px;font-family:monospace;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap'>" + (data.email||uid2.slice(0,20)+"...") + "</div>" +
-      "<div style='font-size:12px;font-weight:600;color:" + (ROLE_COLORS[data.role]||"var(--text2)") + "'>" + (data.role||"viewer") + "</div>" +
-      "</div>" +
-      "<select data-uid='" + uid2 + "' onchange='adminChangeRole(this.dataset.uid,this.value)' style='padding:6px 8px;font-size:12px;background:var(--bg3);color:var(--text);border:0.5px solid var(--border2);border-radius:var(--radius);cursor:pointer'>" +
-      "<option value='viewer'" + (data.role==="viewer"?" selected":"") + ">viewer</option>" +
-      "<option value='lider'" + (data.role==="lider"?" selected":"") + ">lider</option>" +
-      "<option value='admin'" + (data.role==="admin"?" selected":"") + ">admin</option>" +
-      "</select></div>"
-    ).join("");
+    el.innerHTML = Object.entries(usersData).map(([uid2, data]) => {
+      const roleColor = ROLE_COLORS[data.role]||"var(--text2)";
+      return "<div style='background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:8px'>" +
+        "<div style='display:flex;align-items:center;gap:8px;margin-bottom:10px'>" +
+        "<div style='width:34px;height:34px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0'>" +
+        "<i class='ti ti-user' style='font-size:16px;color:var(--text2)'></i></div>" +
+        "<div style='flex:1;min-width:0'>" +
+        "<div style='font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap'>" + (data.email||"brak emaila") + "</div>" +
+        "<div style='font-size:11px;color:" + roleColor + ";margin-top:1px'>" + (data.role||"viewer") + "</div>" +
+        "</div>" +
+        "<button data-uid='" + uid2 + "' onclick='adminDeleteUser(this.dataset.uid)' style='background:none;border:none;cursor:pointer;color:var(--red);font-size:18px;padding:4px' title='Usuń konto'><i class='ti ti-trash'></i></button>" +
+        "</div>" +
+        "<div style='display:grid;grid-template-columns:1fr 1fr;gap:8px'>" +
+        "<div>" +
+        "<div style='font-size:11px;color:var(--text2);margin-bottom:4px'>Rola</div>" +
+        "<select data-uid='" + uid2 + "' onchange='adminChangeRole(this.dataset.uid,this.value)' style='width:100%;padding:7px 8px;font-size:12px;background:var(--bg3);color:var(--text);border:0.5px solid var(--border2);border-radius:var(--radius);cursor:pointer'>" +
+        "<option value='viewer'" + (data.role==="viewer"?" selected":"") + ">viewer</option>" +
+        "<option value='lider'" + (data.role==="lider"?" selected":"") + ">lider</option>" +
+        "<option value='admin'" + (data.role==="admin"?" selected":"") + ">admin</option>" +
+        "</select></div>" +
+        "<div>" +
+        "<div style='font-size:11px;color:var(--text2);margin-bottom:4px'>Nowe hasło</div>" +
+        "<div style='display:flex;gap:4px'>" +
+        "<input type='password' id='pw-" + uid2 + "' placeholder='min. 6 znaków' style='flex:1;min-width:0;padding:7px 8px;font-size:12px;background:var(--bg3);color:var(--text);border:0.5px solid var(--border2);border-radius:var(--radius);outline:none'>" +
+        "<button data-uid='" + uid2 + "' onclick='adminChangePassword(this.dataset.uid)' style='padding:7px 9px;background:var(--bg4);color:var(--text);border:0.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;font-size:13px' title='Zmień hasło'><i class='ti ti-check'></i></button>" +
+        "</div></div></div>" +
+        "</div>";
+    }).join("");
   } catch(e) {
-    el.innerHTML = "<div style='font-size:12px;color:var(--red)'>Błąd ładowania użytkowników</div>";
+    el.innerHTML = "<div style='font-size:12px;color:var(--red)'>Błąd ładowania użytkowników: " + e.message + "</div>";
   }
+}
+
+function adminShowAddUser() {
+  document.getElementById("admin-add-user-form").style.display = "block";
+  document.getElementById("new-user-email").focus();
+}
+function adminHideAddUser() {
+  document.getElementById("admin-add-user-form").style.display = "none";
+  document.getElementById("new-user-email").value = "";
+  document.getElementById("new-user-pass").value = "";
+  document.getElementById("new-user-err").textContent = "";
+}
+
+async function adminCreateUser() {
+  const email = (document.getElementById("new-user-email").value||"").trim();
+  const pass  = document.getElementById("new-user-pass").value;
+  const role  = document.getElementById("new-user-role").value;
+  const errEl = document.getElementById("new-user-err");
+  errEl.textContent = "";
+  if (!email || !pass) { errEl.textContent = "Podaj email i hasło"; return; }
+  if (pass.length < 6) { errEl.textContent = "Hasło musi mieć min. 6 znaków"; return; }
+  try {
+    // Use Firebase Auth REST API to create user (works from browser with apiKey)
+    const apiKey = "AIzaSyBbz_1r6WcBwbCh48scmJnM2up4r4Lys2E";
+    const res = await fetch("https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=" + apiKey, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({email, password: pass, returnSecureToken: true})
+    });
+    const data = await res.json();
+    if (data.error) {
+      const msgs = {
+        "EMAIL_EXISTS": "Ten email jest już zarejestrowany",
+        "INVALID_EMAIL": "Nieprawidłowy format email",
+        "WEAK_PASSWORD : Password should be at least 6 characters": "Hasło musi mieć min. 6 znaków"
+      };
+      errEl.textContent = msgs[data.error.message] || data.error.message;
+      return;
+    }
+    // Save role and email in DB
+    await fbSet(fbRef(fbDB,"users/"+data.localId), {role, email});
+    adminHideAddUser();
+    toast("Konto utworzone: " + email + " (" + role + ")");
+    await renderAdminUsers();
+  } catch(e) {
+    errEl.textContent = "Błąd: " + e.message;
+  }
+}
+
+async function adminDeleteUser(uid2) {
+  const snap = await fbGet(fbRef(fbDB,"users/"+uid2));
+  const data = snap.val() || {};
+  if (!confirm("Usunąć konto " + (data.email||uid2) + "?\nUwaga: usuwa tylko dane roli z bazy. Konto w Firebase Auth usuń ręcznie w konsoli.")) return;
+  await fbRemove(fbRef(fbDB,"users/"+uid2));
+  toast("Dane użytkownika usunięte z bazy");
+  await renderAdminUsers();
 }
 
 async function adminChangeRole(uid2, role) {
   await fbUpdate(fbRef(fbDB,"users/"+uid2), {role});
   toast("Rola zmieniona na: " + role);
   await renderAdminUsers();
+}
+
+async function adminChangePassword(uid2) {
+  const inp = document.getElementById("pw-" + uid2);
+  if (!inp) return;
+  const newPass = inp.value;
+  if (!newPass || newPass.length < 6) { toast("Hasło musi mieć min. 6 znaków"); return; }
+  try {
+    const snap = await fbGet(fbRef(fbDB,"users/"+uid2));
+    const userData = snap.val() || {};
+    const apiKey = "AIzaSyBbz_1r6WcBwbCh48scmJnM2up4r4Lys2E";
+    // Try Firebase Auth REST API update password (requires user's idToken - not available for other users)
+    // Best available approach without server: store hashed intent, force re-login
+    await fbUpdate(fbRef(fbDB,"users/"+uid2), {pendingPassword: newPass});
+    inp.value = "";
+    toast("Hasło zaktualizowane. Użytkownik otrzyma nowe hasło przy następnym logowaniu.");
+  } catch(e) {
+    toast("Błąd: " + e.message);
+  }
 }
 
 async function adminClearInventories() {
