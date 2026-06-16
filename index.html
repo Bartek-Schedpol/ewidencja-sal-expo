@@ -12964,16 +12964,7 @@ window.QRCode = QRCode;
   import { getDatabase, ref, set, get, update, remove, onValue, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   try {
-    const app = initializeApp({
-      apiKey: "AIzaSyBbz_1r6WcBwbCh48scmJnM2up4r4Lys2E",
-      authDomain: "ewidencja-sal-eksp-2026.firebaseapp.com",
-      databaseURL: "https://ewidencja-sal-eksp-2026-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "ewidencja-sal-eksp-2026",
-      storageBucket: "ewidencja-sal-eksp-2026.firebasestorage.app",
-      messagingSenderId: "595434790145",
-      appId: "1:595434790145:web:fb07bb9ad9cf2b6c014f00",
-      measurementId: "G-KQVWZN7BTD"
-    });
+    const app = initializeApp({ databaseURL: "https://ewidencja-sal-eksp-2026-default-rtdb.europe-west1.firebasedatabase.app/" });
     const db = getDatabase(app);
     const auth = getAuth(app);
     window._fb = { db, ref, set, get, update, remove, onValue, push, auth, signInWithEmailAndPassword, signOut, onAuthStateChanged };
@@ -13350,19 +13341,36 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 <!-- ADMIN -->
 <div id="s-admin" class="screen">
   <div class="topbar"><i class="ti ti-arrow-left" onclick="go('s-home')"></i><h1>Panel admina <span class="admin-badge">ADMIN</span></h1></div>
-  <div style="padding:16px">
-    <div class="sec-title">Zarządzanie bazą</div>
-    <div class="card" style="cursor:default;margin-bottom:8px">
-      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">Inwentury</div>
+
+  <div style="padding:0 16px">
+
+    <!-- SALE MANAGEMENT -->
+    <div class="sec-title" style="padding-left:0;padding-top:16px">Sale pokazowe</div>
+    <div id="admin-sales-list" style="margin-bottom:8px"></div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <input type="text" id="admin-new-sala" placeholder="Nazwa nowej sali..." style="flex:1;padding:10px 12px;font-size:13px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg3);color:var(--text);outline:none">
+      <button onclick="adminAddSala()" style="padding:10px 16px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap"><i class="ti ti-plus"></i> Dodaj</button>
+    </div>
+
+    <!-- USER MANAGEMENT -->
+    <div class="sec-title" style="padding-left:0">Użytkownicy</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Zmień rolę istniejących kont. Nowi użytkownicy domyślnie dostają rolę <strong style="color:var(--text)">viewer</strong>.</div>
+    <div id="admin-users-list" style="margin-bottom:8px"></div>
+
+    <!-- DATABASE -->
+    <div class="sec-title" style="padding-left:0;margin-top:8px">Baza danych</div>
+    <div class="card" style="cursor:default;margin:0 0 8px">
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px">Inwentury</div>
       <div style="font-size:12px;color:var(--text2)" id="admin-inv-count"></div>
     </div>
     <button class="btn-danger" onclick="adminClearInventories()"><i class="ti ti-trash" style="margin-right:6px"></i>Usuń wszystkie inwentury</button>
-    <div class="card" style="cursor:default;margin:16px 12px 8px">
-      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">Historia zmian</div>
+    <div class="card" style="cursor:default;margin:12px 0 8px">
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px">Historia zmian</div>
       <div style="font-size:12px;color:var(--text2)" id="admin-log-count"></div>
     </div>
     <button class="btn-danger" onclick="adminClearLog()"><i class="ti ti-trash" style="margin-right:6px"></i>Usuń całą historię zmian</button>
-    <div style="margin:20px 12px 0;padding:12px;background:var(--amber-bg);border-radius:var(--radius);border:0.5px solid var(--amber);font-size:12px;color:var(--amber-text)">
+
+    <div style="margin:16px 0;padding:12px;background:var(--amber-bg);border-radius:var(--radius);border:0.5px solid var(--amber);font-size:12px;color:var(--amber-text)">
       <i class="ti ti-alert-triangle" style="margin-right:6px"></i>Operacje usuwania są nieodwracalne. Działasz na żywej bazie danych.
     </div>
   </div>
@@ -13386,7 +13394,11 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
       <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">Podgląd importu:</div>
       <div id="import-stats" style="font-size:13px;margin-bottom:12px;color:var(--text)"></div>
       <div id="import-table-wrap" style="overflow-x:auto;max-height:240px;overflow-y:auto;border:0.5px solid var(--border);border-radius:var(--radius)"></div>
-      <button class="btn-primary" style="margin-top:12px" onclick="confirmImport()"><i class="ti ti-upload" style="margin-right:8px"></i>Dociągnij brakujące produkty</button>
+      <div style="display:flex;gap:4px;margin-top:12px;background:var(--bg3);border-radius:var(--radius);padding:4px">
+        <button id="import-mode-add" onclick="setImportMode('add')" style="flex:1;padding:9px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;background:var(--blue);color:#fff">Dociągnij brakujące</button>
+        <button id="import-mode-replace" onclick="setImportMode('replace')" style="flex:1;padding:9px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;background:transparent;color:var(--text2)">Zastąp całą bazę</button>
+      </div>
+      <button class="btn-primary" style="margin-top:8px" onclick="confirmImport()"><i class="ti ti-upload" style="margin-right:8px"></i><span id="import-btn-label">Dociągnij brakujące produkty</span></button>
       <button class="btn-secondary" onclick="cancelImport()">Anuluj</button>
     </div>
     <div style="margin:16px 12px 0;padding:12px;background:var(--bg2);border-radius:var(--radius);font-size:11px;color:var(--text2);line-height:1.7">
@@ -13401,7 +13413,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 <div id="toast"></div>
 <script>
 const VERSION = "Beta v1.01/2026";
-const SALE_NAMES = ["Sala Niezawodności","Sala Showroom"];
+let SALE_NAMES = ["Sala Niezawodności","Sala Showroom"];
 const STATUS_CLASS = {
   "Na ekspozycji":"s-expo",
   "Wypożyczony – dla klienta":"s-wyp-k",
@@ -13457,9 +13469,15 @@ function initApp() {
     if (user) {
       userEmail = user.email;
       // Determine role from DB
-      fbGet(fbRef(fbDB, "users/" + user.uid)).then(snap => {
+      fbGet(fbRef(fbDB, "users/" + user.uid)).then(async snap => {
         const data = snap.val() || {};
-        userRole = data.role || "viewer";
+        if (!data.role) {
+          // First login — assign viewer role automatically
+          await fbSet(fbRef(fbDB, "users/" + user.uid), {role: "viewer", email: user.email});
+          userRole = "viewer";
+        } else {
+          userRole = data.role;
+        }
         localStorage.setItem("ev_session", JSON.stringify({role: userRole, email: userEmail}));
         startListeners();
         refreshHome();
@@ -13476,6 +13494,12 @@ if (window._fbReady) { initApp(); }
 else { window.addEventListener("firebase-ready", initApp); }
 
 function startListeners() {
+  fbOnValue(fbRef(fbDB,"sales"), snap => {
+    const raw = snap.val();
+    if (raw && Array.isArray(raw) && raw.length) SALE_NAMES = raw;
+    else if (raw && typeof raw === "object") SALE_NAMES = Object.values(raw).filter(Boolean);
+    updateSaleDropdowns();
+  });
   fbOnValue(fbRef(fbDB,"products"), snap => {
     products = snap.val() || {};
     if (document.getElementById("s-products").classList.contains("active")) renderProducts();
@@ -13545,6 +13569,14 @@ function go(sid) {
   if (sid === "s-sales")       renderSales();
   if (sid === "s-admin")       renderAdmin();
   window.scrollTo(0,0);
+}
+
+function updateSaleDropdowns() {
+  const opts = SALE_NAMES.map(s => "<option>" + s + "</option>").join("");
+  const optsWithEmpty = "<option value=''>— wybierz salę —</option>" + opts;
+  ["f-sala"].forEach(id => { const el = document.getElementById(id); if(el) el.innerHTML = optsWithEmpty; });
+  ["e-sala"].forEach(id => { const el = document.getElementById(id); if(el) el.innerHTML = opts; });
+  buildFilterPills();
 }
 
 function badge(s) { return "<span class='badge " + (STATUS_CLASS[s]||"s-dem") + "'>" + s + "</span>"; }
@@ -13999,12 +14031,106 @@ function startScanFind() {
 }
 
 // ── Admin panel ────────────────────────────────────────────────────
-function renderAdmin() {
+async function renderAdmin() {
   if (userRole !== "admin") { go("s-home"); return; }
-  const invCount = invHistories.length;
-  const logCount = logs.length;
-  document.getElementById("admin-inv-count").textContent = invCount + " inwentur w bazie";
-  document.getElementById("admin-log-count").textContent = logCount + " wpisów w historii";
+  document.getElementById("admin-inv-count").textContent = invHistories.length + " inwentur w bazie";
+  document.getElementById("admin-log-count").textContent = logs.length + " wpisów w historii";
+  renderAdminSales();
+  await renderAdminUsers();
+}
+
+function renderAdminSales() {
+  const el = document.getElementById("admin-sales-list");
+  if (!el) return;
+  el.innerHTML = SALE_NAMES.map((sala, i) =>
+    "<div style='display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:0.5px solid var(--border)'>" +
+    "<i class='ti ti-building-store' style='color:var(--blue);font-size:16px'></i>" +
+    "<span style='flex:1;font-size:13px;color:var(--text)'>" + sala + "</span>" +
+    "<span style='font-size:11px;color:var(--text2);margin-right:4px'>" + Object.values(products).filter(p=>p.sala===sala).length + " prod.</span>" +
+    "<button data-i='" + i + "' onclick='adminRenameSala(+this.dataset.i)' style='background:none;border:none;cursor:pointer;color:var(--text2);font-size:18px;padding:4px'><i class='ti ti-edit'></i></button>" +
+    (SALE_NAMES.length > 1 ? "<button data-i='" + i + "' onclick='adminRemoveSala(+this.dataset.i)' style='background:none;border:none;cursor:pointer;color:var(--red);font-size:18px;padding:4px'><i class='ti ti-trash'></i></button>" : "") +
+    "</div>"
+  ).join("");
+}
+
+async function adminAddSala() {
+  const inp = document.getElementById("admin-new-sala");
+  const name = (inp.value||"").trim();
+  if (!name) { toast("Podaj nazwę sali"); return; }
+  if (SALE_NAMES.includes(name)) { toast("Taka sala już istnieje"); return; }
+  SALE_NAMES.push(name);
+  await fbSet(fbRef(fbDB,"sales"), SALE_NAMES);
+  inp.value = "";
+  toast("Sala dodana: " + name);
+  renderAdminSales();
+  updateSaleDropdowns();
+}
+
+async function adminRemoveSala(idx) {
+  const sala = SALE_NAMES[idx];
+  const cnt = Object.values(products).filter(p=>p.sala===sala).length;
+  const msg = cnt > 0
+    ? "Sala \"" + sala + "\" ma " + cnt + " produktów. Usunięcie sali nie usuwa produktów. Kontynuować?"
+    : "Usunąć salę \"" + sala + "\"?";
+  if (!confirm(msg)) return;
+  SALE_NAMES.splice(idx, 1);
+  await fbSet(fbRef(fbDB,"sales"), SALE_NAMES);
+  toast("Sala usunięta");
+  renderAdminSales();
+  updateSaleDropdowns();
+}
+
+async function adminRenameSala(idx) {
+  const oldName = SALE_NAMES[idx];
+  const newName = prompt("Nowa nazwa sali:", oldName);
+  if (!newName || newName.trim() === oldName) return;
+  const trimmed = newName.trim();
+  if (SALE_NAMES.includes(trimmed)) { toast("Taka sala już istnieje"); return; }
+  const toUpdate = Object.values(products).filter(p=>p.sala===oldName);
+  for (const p of toUpdate) {
+    await fbUpdate(fbRef(fbDB,"products/"+p.id), {sala: trimmed});
+  }
+  SALE_NAMES[idx] = trimmed;
+  await fbSet(fbRef(fbDB,"sales"), SALE_NAMES);
+  toast("Sala zmieniona. Zaktualizowano " + toUpdate.length + " produktów.");
+  renderAdminSales();
+  updateSaleDropdowns();
+}
+
+async function renderAdminUsers() {
+  const el = document.getElementById("admin-users-list");
+  if (!el) return;
+  el.innerHTML = "<div style='font-size:12px;color:var(--text2);padding:8px 0'>Ładowanie użytkowników...</div>";
+  try {
+    const snap = await fbGet(fbRef(fbDB,"users"));
+    const usersData = snap.val() || {};
+    if (!Object.keys(usersData).length) {
+      el.innerHTML = "<div style='font-size:12px;color:var(--text2);padding:8px 0'>Brak użytkowników w bazie. Nowy użytkownik dostanie rolę viewer przy pierwszym logowaniu.</div>";
+      return;
+    }
+    const ROLE_COLORS = {admin:"var(--amber-text)",lider:"var(--blue-text)",viewer:"var(--text2)"};
+    el.innerHTML = Object.entries(usersData).map(([uid2, data]) =>
+      "<div style='display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:0.5px solid var(--border)'>" +
+      "<i class='ti ti-user' style='color:var(--text2);font-size:16px'></i>" +
+      "<div style='flex:1;min-width:0'>" +
+      "<div style='font-size:11px;font-family:monospace;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap'>" + (data.email||uid2.slice(0,20)+"...") + "</div>" +
+      "<div style='font-size:12px;font-weight:600;color:" + (ROLE_COLORS[data.role]||"var(--text2)") + "'>" + (data.role||"viewer") + "</div>" +
+      "</div>" +
+      "<select data-uid='" + uid2 + "' onchange='adminChangeRole(this.dataset.uid,this.value)' style='padding:6px 8px;font-size:12px;background:var(--bg3);color:var(--text);border:0.5px solid var(--border2);border-radius:var(--radius);cursor:pointer'>" +
+      "<option value='viewer'" + (data.role==="viewer"?" selected":"") + ">viewer</option>" +
+      "<option value='lider'" + (data.role==="lider"?" selected":"") + ">lider</option>" +
+      "<option value='admin'" + (data.role==="admin"?" selected":"") + ">admin</option>" +
+      "</select></div>"
+    ).join("");
+  } catch(e) {
+    el.innerHTML = "<div style='font-size:12px;color:var(--red)'>Błąd ładowania użytkowników</div>";
+  }
+}
+
+async function adminChangeRole(uid2, role) {
+  await fbUpdate(fbRef(fbDB,"users/"+uid2), {role});
+  toast("Rola zmieniona na: " + role);
+  await renderAdminUsers();
 }
 
 async function adminClearInventories() {
@@ -14115,7 +14241,47 @@ function handleCSVImport(input) {
   reader.readAsText(file, "UTF-8");
 }
 
+let importMode = "add";
+function setImportMode(mode) {
+  importMode = mode;
+  const addBtn = document.getElementById("import-mode-add");
+  const replBtn = document.getElementById("import-mode-replace");
+  const label = document.getElementById("import-btn-label");
+  if (addBtn) { addBtn.style.background = mode==="add" ? "var(--blue)" : "transparent"; addBtn.style.color = mode==="add" ? "#fff" : "var(--text2)"; }
+  if (replBtn) { replBtn.style.background = mode==="replace" ? "var(--red)" : "transparent"; replBtn.style.color = mode==="replace" ? "#fff" : "var(--text2)"; }
+  if (label) label.textContent = mode==="add" ? "Dociągnij brakujące produkty" : "Zastąp całą bazę produktów";
+}
+
 async function confirmImport() {
+  if (importMode === "replace") {
+    if (!confirm("ZASTĄPIĆ całą bazę produktów? Wszystkie obecne produkty zostaną usunięte. Tej operacji nie można cofnąć.")) return;
+    const allRows = [...importBuffer];
+    importBuffer = [];
+    await fbRemove(fbRef(fbDB,"products"));
+    const VSALES = SALE_NAMES;
+    const VTYPES = ["standardowy","prototyp","próbka","element ekspozycyjny"];
+    const VSTATUS = ["Na ekspozycji","Wypożyczony – dla klienta","Wypożyczony – handlowiec","Na testów / prezentacji","W serwisie","Zdemontowany / zdjęty z ekspozycji","Zlikwidowany","Brak – do wyjaśnienia"];
+    let added = 0;
+    for (const row of allRows) {
+      const nazwa = (row.nazwa||row.name||"").trim();
+      if (!nazwa) continue;
+      const id2 = row.id || uid();
+      await fbSet(fbRef(fbDB,"products/"+id2), {
+        id:id2, nazwa, kod:row.kod||"", marka:row.marka||"", wymiary:row.wymiary||"",
+        sala: VSALES.includes(row.sala) ? row.sala : VSALES[0],
+        typ: VTYPES.includes(row.typ) ? row.typ : "standardowy",
+        status: VSTATUS.includes(row.status) ? row.status : "Na ekspozycji",
+        uwagi:row.uwagi||"", osoba:row.osoba||"", zwrot:row.zwrot||"", created:row.created||tsNow()
+      });
+      added++;
+    }
+    await addLog("Import CSV — zastąpienie bazy","—", added+" produktów wgranych","admin");
+    document.getElementById("import-preview").style.display = "none";
+    document.getElementById("csv-file-input").value = "";
+    toast("Baza zastąpiona. Wgrano " + added + " produktów.");
+    refreshHome();
+    return;
+  }
   if (!importBuffer.length) { toast("Brak nowych produktów"); return; }
   const VALID_SALES    = ["Sala Niezawodności","Sala Showroom"];
   const VALID_TYPES    = ["standardowy","prototyp","próbka","element ekspozycyjny"];
